@@ -14,11 +14,6 @@ type User struct {
 
 type httpHandler func(http.ResponseWriter, *http.Request)
 
-type basicResponse struct {
-	Error   string `json:"error"`
-	Success bool   `json:"success"`
-}
-
 func Init(r *mux.Router, db *gorm.DB) error {
 	if err := autoMigrate(db); err != nil {
 		return err

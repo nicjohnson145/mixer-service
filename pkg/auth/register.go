@@ -13,19 +13,18 @@ type RegisterNewUserRequest struct {
 	Password string `json:"password"`
 }
 
-type RegisterNewUserErrorResponse struct {
-	basicResponse
+type RegisterNewUserResponse struct {
+	Error   string `json:"error"`
+	Success bool   `json:"success"`
 }
 
 func registerNewUser(db *gorm.DB) httpHandler {
 
 	writeRegisterNewUserReponse := func (w http.ResponseWriter, status int, msg string) {
 		w.WriteHeader(status)
-		bytes, _ := json.Marshal(RegisterNewUserErrorResponse{
-			basicResponse: basicResponse{
-				Error: msg,
-				Success: status >= 200 && status <= 299,
-			},
+		bytes, _ := json.Marshal(RegisterNewUserResponse{
+			Error: msg,
+			Success: status >= 200 && status <= 299,
 		})
 		fmt.Fprintln(w, string(bytes))
 	}
@@ -36,6 +35,10 @@ func registerNewUser(db *gorm.DB) httpHandler {
 
 	writeBadRequestError := func(w http.ResponseWriter, msg string) {
 		writeRegisterNewUserReponse(w, http.StatusBadRequest, msg)
+	}
+
+	writeSucess := func(w http.ResponseWriter) {
+		writeRegisterNewUserReponse(w, http.StatusOK, "")
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +78,7 @@ func registerNewUser(db *gorm.DB) httpHandler {
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
+		writeSucess(w)
 	}
 
 }

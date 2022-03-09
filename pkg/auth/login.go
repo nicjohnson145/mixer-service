@@ -14,7 +14,8 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	basicResponse
+	Error   string `json:"error"`
+	Success bool   `json:"success"`
 }
 
 
@@ -23,10 +24,8 @@ func login(db *gorm.DB) httpHandler {
 	writeLoginResponse := func (w http.ResponseWriter, status int, error string) {
 		w.WriteHeader(status)
 		bytes, _ := json.Marshal(LoginResponse{
-			basicResponse: basicResponse{
-				Error: error,
-				Success: status >= 200 && status <= 299,
-			},
+			Error: error,
+			Success: status >= 200 && status <= 299,
 		})
 		fmt.Fprintln(w, string(bytes))
 	}
@@ -41,6 +40,10 @@ func login(db *gorm.DB) httpHandler {
 
 	writeInternalError := func(w http.ResponseWriter) {
 		writeLoginResponse(w, http.StatusInternalServerError, "internal error")
+	}
+
+	writeSucess := func(w http.ResponseWriter) {
+		writeLoginResponse(w, http.StatusOK, "")
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -71,6 +74,6 @@ func login(db *gorm.DB) httpHandler {
 			return
 		}
 		
-		w.WriteHeader(http.StatusOK)
+		writeSucess(w)
 	}
 }
