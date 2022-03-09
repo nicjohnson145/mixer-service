@@ -2,10 +2,10 @@ package auth
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"gorm.io/gorm"
 	"net/http"
-	"errors"
 )
 
 type RegisterNewUserRequest struct {
@@ -20,10 +20,10 @@ type RegisterNewUserResponse struct {
 
 func registerNewUser(db *gorm.DB) httpHandler {
 
-	writeRegisterNewUserReponse := func (w http.ResponseWriter, status int, msg string) {
+	writeRegisterNewUserReponse := func(w http.ResponseWriter, status int, msg string) {
 		w.WriteHeader(status)
 		bytes, _ := json.Marshal(RegisterNewUserResponse{
-			Error: msg,
+			Error:   msg,
 			Success: status >= 200 && status <= 299,
 		})
 		fmt.Fprintln(w, string(bytes))
@@ -82,4 +82,3 @@ func registerNewUser(db *gorm.DB) httpHandler {
 	}
 
 }
-

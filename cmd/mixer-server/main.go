@@ -1,15 +1,15 @@
 package main
 
 import (
-	"github.com/nicjohnson145/mixer-service/pkg/auth"
-	"net/http"
-	"github.com/gorilla/mux"
 	"fmt"
-	"os"
-	"gorm.io/gorm"
-	"gorm.io/driver/sqlite"
+	"github.com/gorilla/mux"
+	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/onrik/gorm-logrus"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+	"net/http"
+	"os"
 )
 
 func main() {
@@ -28,5 +28,5 @@ func main() {
 	}
 	port := "30000"
 	log.Info("Listening on port ", port)
-	http.ListenAndServe(":" + port, r)
+	http.ListenAndServe(":"+port, r)
 }

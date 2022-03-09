@@ -2,10 +2,10 @@ package auth
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"gorm.io/gorm"
 	"net/http"
-	"errors"
 )
 
 type LoginRequest struct {
@@ -18,19 +18,18 @@ type LoginResponse struct {
 	Success bool   `json:"success"`
 }
 
-
 func login(db *gorm.DB) httpHandler {
 
-	writeLoginResponse := func (w http.ResponseWriter, status int, error string) {
+	writeLoginResponse := func(w http.ResponseWriter, status int, error string) {
 		w.WriteHeader(status)
 		bytes, _ := json.Marshal(LoginResponse{
-			Error: error,
+			Error:   error,
 			Success: status >= 200 && status <= 299,
 		})
 		fmt.Fprintln(w, string(bytes))
 	}
 
-	writeUnauthorizedError := func (w http.ResponseWriter) {
+	writeUnauthorizedError := func(w http.ResponseWriter) {
 		writeLoginResponse(w, http.StatusUnauthorized, "unauthorized")
 	}
 
@@ -73,7 +72,7 @@ func login(db *gorm.DB) httpHandler {
 			writeUnauthorizedError(w)
 			return
 		}
-		
+
 		writeSucess(w)
 	}
 }

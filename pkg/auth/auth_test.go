@@ -1,17 +1,17 @@
 package auth
 
 import (
-	"testing"
+	"bytes"
+	"encoding/json"
+	"github.com/stretchr/testify/require"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"gorm.io/driver/sqlite"
-	"github.com/stretchr/testify/require"
-	"os"
+	"io"
 	"net/http"
 	"net/http/httptest"
-	"bytes"
-	"io"
-	"encoding/json"
+	"os"
+	"testing"
 )
 
 func newDB(t *testing.T) (*gorm.DB, func()) {
@@ -83,7 +83,7 @@ func TestRegisterLogin(t *testing.T) {
 		err = json.NewDecoder(rr.Result().Body).Decode(&response)
 		require.NoError(t, err)
 		expected := RegisterNewUserResponse{
-			Error: "user foo already registered",
+			Error:   "user foo already registered",
 			Success: false,
 		}
 		require.Equal(t, expected, response)
