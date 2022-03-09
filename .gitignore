@@ -13,3 +13,9 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# Ignore any erroneously created databases
+*.db
+
+# Ignore server binary
+cmd/mixer-server/mixer-server
