@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"
-	log "github.com/sirupsen/logrus"
 )
 
 type LoginRequest struct {
@@ -27,7 +27,7 @@ func login(db *gorm.DB) HttpHandler {
 		bytes, _ := json.Marshal(LoginResponse{
 			Error:   error,
 			Success: status >= 200 && status <= 299,
-			Token: token,
+			Token:   token,
 		})
 		fmt.Fprintln(w, string(bytes))
 	}

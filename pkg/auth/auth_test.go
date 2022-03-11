@@ -9,11 +9,11 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
-	"io/ioutil"
 )
 
 func newDB(t *testing.T) (*gorm.DB, func()) {

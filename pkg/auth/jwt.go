@@ -1,12 +1,12 @@
 package auth
 
 import (
-	"github.com/dgrijalva/jwt-go"
-	"time"
-	"net/http"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"encoding/json"
+	"github.com/dgrijalva/jwt-go"
+	"net/http"
+	"time"
 )
 
 const (
@@ -53,7 +53,6 @@ func validateToken(token string) (Claims, error) {
 
 	return claims, nil
 }
-
 
 func Protected(handler ClaimsHttpHandler) HttpHandler {
 
