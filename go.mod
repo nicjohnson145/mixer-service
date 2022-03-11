@@ -3,7 +3,7 @@ module github.com/nicjohnson145/mixer-service
 go 1.16
 
 require (
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gorilla/mux v1.8.0
 	github.com/mattn/go-sqlite3 v1.14.12 // indirect
 	github.com/onrik/gorm-logrus v0.3.0
