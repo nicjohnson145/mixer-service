@@ -26,6 +26,7 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
 	port := "30000"
 	log.Info("Listening on port ", port)
 	http.ListenAndServe(":"+port, r)

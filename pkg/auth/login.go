@@ -20,7 +20,7 @@ type LoginResponse struct {
 	Token   string `json:"token,omitempty"`
 }
 
-func login(db *gorm.DB) httpHandler {
+func login(db *gorm.DB) HttpHandler {
 
 	writeLoginResponse := func(w http.ResponseWriter, status int, error string, token string) {
 		w.WriteHeader(status)

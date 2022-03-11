@@ -12,7 +12,8 @@ type User struct {
 	Password string
 }
 
-type httpHandler func(http.ResponseWriter, *http.Request)
+type HttpHandler func(http.ResponseWriter, *http.Request)
+type ClaimsHttpHandler func(http.ResponseWriter, *http.Request, Claims)
 
 func Init(r *mux.Router, db *gorm.DB) error {
 	if err := autoMigrate(db); err != nil {

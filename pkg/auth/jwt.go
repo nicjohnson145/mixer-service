@@ -3,7 +3,14 @@ package auth
 import (
 	"github.com/dgrijalva/jwt-go"
 	"time"
+	"net/http"
 	"errors"
+	"fmt"
+	"encoding/json"
+)
+
+const (
+	AuthenticationHeader = "MixerAuth"
 )
 
 var jwtSecret = []byte("my-super-secert-key")
@@ -45,4 +52,32 @@ func validateToken(token string) (Claims, error) {
 	}
 
 	return claims, nil
+}
+
+
+func Protected(handler ClaimsHttpHandler) HttpHandler {
+
+	writeUnauthorized := func(w http.ResponseWriter) {
+		w.WriteHeader(http.StatusUnauthorized)
+		bytes, _ := json.Marshal(map[string]string{
+			"message": "unauthorized",
+		})
+		fmt.Fprintln(w, string(bytes))
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		val := r.Header.Get(AuthenticationHeader)
+		if val == "" {
+			writeUnauthorized(w)
+			return
+		}
+
+		claims, err := validateToken(val)
+		if err != nil {
+			writeUnauthorized(w)
+			return
+		}
+
+		handler(w, r, claims)
+	}
 }

@@ -3,6 +3,7 @@ package auth
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -12,6 +13,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"io/ioutil"
 )
 
 func newDB(t *testing.T) (*gorm.DB, func()) {
@@ -87,5 +89,49 @@ func TestRegisterLogin(t *testing.T) {
 			Success: false,
 		}
 		require.Equal(t, expected, response)
+	})
+
+	t.Run("protected_no_token_rejected", func(t *testing.T) {
+		const return_val = "protected endpoint"
+
+		protected := func(w http.ResponseWriter, r *http.Request, c Claims) {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, return_val)
+		}
+
+		protectedHandler := Protected(protected)
+
+		protectedRequest, err := http.NewRequest("GET", "/protected", nil)
+		require.NoError(t, err)
+
+		rr := httptest.NewRecorder()
+		protectedHandler(rr, protectedRequest)
+
+		require.Equal(t, http.StatusUnauthorized, rr.Result().StatusCode)
+	})
+
+	t.Run("protected_valid_token_accepted", func(t *testing.T) {
+		const return_val = "protected endpoint"
+
+		protected := func(w http.ResponseWriter, r *http.Request, c Claims) {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, return_val)
+		}
+
+		protectedHandler := Protected(protected)
+
+		protectedRequest, err := http.NewRequest("GET", "/protected", nil)
+		token, err := generateTokenString(TokenInputs{Username: "foobar"})
+		require.NoError(t, err)
+		protectedRequest.Header.Set(AuthenticationHeader, token)
+		require.NoError(t, err)
+
+		rr := httptest.NewRecorder()
+		protectedHandler(rr, protectedRequest)
+
+		require.Equal(t, http.StatusOK, rr.Result().StatusCode)
+		got, err := ioutil.ReadAll(rr.Result().Body)
+		require.NoError(t, err)
+		require.Equal(t, return_val, string(got))
 	})
 }

@@ -14,11 +14,11 @@ type RegisterNewUserRequest struct {
 }
 
 type RegisterNewUserResponse struct {
-	Error   string `json:"error"`
+	Error   string `json:"error,omitempty"`
 	Success bool   `json:"success"`
 }
 
-func registerNewUser(db *gorm.DB) httpHandler {
+func registerNewUser(db *gorm.DB) HttpHandler {
 
 	writeRegisterNewUserReponse := func(w http.ResponseWriter, status int, msg string) {
 		w.WriteHeader(status)
