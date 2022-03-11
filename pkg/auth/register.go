@@ -7,6 +7,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"github.com/nicjohnson145/mixer-service/pkg/common"
 )
 
 type RegisterNewUserRequest struct {
@@ -58,7 +59,7 @@ func registerNewUser(db *sql.DB) HttpHandler {
 		}
 
 		existingUser, err := getUserByName(payload.Username, db)
-		if err != nil && !errors.Is(err, ErrNotFound) {
+		if err != nil && !errors.Is(err, common.ErrNotFound) {
 			writeInternalError(w, err, "checking for existing user")
 			return
 		}

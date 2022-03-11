@@ -7,6 +7,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"github.com/nicjohnson145/mixer-service/pkg/common"
 )
 
 type LoginRequest struct {
@@ -67,7 +68,7 @@ func login(db *sql.DB) HttpHandler {
 		}
 		existingUser, err := getUserByName(payload.Username, db)
 		if err != nil {
-			if errors.Is(err, ErrNotFound) {
+			if errors.Is(err, common.ErrNotFound) {
 				writeUnauthorizedError(w, payload.Username, "fetching from db")
 				return
 			} else {
