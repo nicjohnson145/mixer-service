@@ -1,10 +1,11 @@
 package auth
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -18,7 +19,7 @@ type RegisterNewUserResponse struct {
 	Success bool   `json:"success"`
 }
 
-func registerNewUser(db *gorm.DB) HttpHandler {
+func registerNewUser(db *sql.DB) HttpHandler {
 
 	writeRegisterNewUserReponse := func(w http.ResponseWriter, status int, msg string) {
 		w.WriteHeader(status)
@@ -29,7 +30,11 @@ func registerNewUser(db *gorm.DB) HttpHandler {
 		fmt.Fprintln(w, string(bytes))
 	}
 
-	writeInternalError := func(w http.ResponseWriter) {
+	writeInternalError := func(w http.ResponseWriter, err error, operation string) {
+		log.WithFields(log.Fields{
+			"error":     err.Error(),
+			"operation": operation,
+		}).Error("error registering new user")
 		writeRegisterNewUserReponse(w, http.StatusInternalServerError, "internal error")
 	}
 
@@ -52,29 +57,30 @@ func registerNewUser(db *gorm.DB) HttpHandler {
 			return
 		}
 
-		var existingUser User
-		result := db.Model(&User{}).First(&existingUser, "username = ?", payload.Username)
-
-		// If we found something, return bad request, user exists
-		if result.Error == nil {
-			writeBadRequestError(w, fmt.Sprintf("user %v already registered", payload.Username))
+		existingUser, err := getUserByName(payload.Username, db)
+		if err != nil && !errors.Is(err, ErrNotFound) {
+			writeInternalError(w, err, "checking for existing user")
 			return
 		}
 
-		if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			writeInternalError(w)
+		if existingUser != nil {
+			writeBadRequestError(w, fmt.Sprintf("user %v already exists", payload.Username))
 			return
 		}
 
 		hashedPw, err := hashPassword(payload.Password)
 		if err != nil {
-			writeInternalError(w)
+			writeInternalError(w, err, "hashing password")
 			return
 		}
 
-		result = db.Create(&User{Username: payload.Username, Password: hashedPw})
-		if result.Error != nil {
-			writeInternalError(w)
+		newUser := UserModel{
+			Username: payload.Username,
+			Password: hashedPw,
+		}
+		err = createUser(newUser, db)
+		if err != nil {
+			writeInternalError(w, err, "inserting into db")
 			return
 		}
 

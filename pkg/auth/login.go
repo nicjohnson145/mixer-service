@@ -1,11 +1,11 @@
 package auth
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
 	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -20,7 +20,7 @@ type LoginResponse struct {
 	Token   string `json:"token,omitempty"`
 }
 
-func login(db *gorm.DB) HttpHandler {
+func login(db *sql.DB) HttpHandler {
 
 	writeLoginResponse := func(w http.ResponseWriter, status int, error string, token string) {
 		w.WriteHeader(status)
@@ -32,7 +32,11 @@ func login(db *gorm.DB) HttpHandler {
 		fmt.Fprintln(w, string(bytes))
 	}
 
-	writeUnauthorizedError := func(w http.ResponseWriter) {
+	writeUnauthorizedError := func(w http.ResponseWriter, user string, reason string) {
+		log.WithFields(log.Fields{
+			"user":   user,
+			"reason": reason,
+		}).Info("invalid login attempt")
 		writeLoginResponse(w, http.StatusUnauthorized, "unauthorized", "")
 	}
 
@@ -40,8 +44,11 @@ func login(db *gorm.DB) HttpHandler {
 		writeLoginResponse(w, http.StatusBadRequest, msg, "")
 	}
 
-	writeInternalError := func(w http.ResponseWriter, err error) {
-		log.WithField("error", err.Error()).Error("Internal server error")
+	writeInternalError := func(w http.ResponseWriter, err error, location string) {
+		log.WithFields(log.Fields{
+			"error":     err.Error(),
+			"operation": location,
+		}).Error("error during user login")
 		writeLoginResponse(w, http.StatusInternalServerError, "internal error", "")
 	}
 
@@ -58,27 +65,25 @@ func login(db *gorm.DB) HttpHandler {
 			writeBadRequestError(w, err.Error())
 			return
 		}
-		var existingUser User
-		result := db.Model(&User{}).First(&existingUser, "username = ?", payload.Username)
-
-		if result.Error != nil {
-			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-				writeUnauthorizedError(w)
+		existingUser, err := getUserByName(payload.Username, db)
+		if err != nil {
+			if errors.Is(err, ErrNotFound) {
+				writeUnauthorizedError(w, payload.Username, "fetching from db")
 				return
 			} else {
-				writeInternalError(w, err)
+				writeInternalError(w, err, "getting user from db")
 				return
 			}
 		}
 
 		if !comparePasswords(existingUser.Password, payload.Password) {
-			writeUnauthorizedError(w)
+			writeUnauthorizedError(w, payload.Username, "comparing passwords")
 			return
 		}
 
 		tokenStr, err := generateTokenString(TokenInputs{Username: payload.Username})
 		if err != nil {
-			writeInternalError(w, err)
+			writeInternalError(w, err, "generating jwt token")
 			return
 		}
 

@@ -1,38 +1,26 @@
 package auth
 
 import (
+	"database/sql"
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 	"net/http"
 )
 
 type User struct {
-	Username string `gorm:"primaryKey"`
+	Username string
 	Password string
 }
 
 type HttpHandler func(http.ResponseWriter, *http.Request)
 type ClaimsHttpHandler func(http.ResponseWriter, *http.Request, Claims)
 
-func Init(r *mux.Router, db *gorm.DB) error {
-	if err := autoMigrate(db); err != nil {
-		return err
-	}
-
+func Init(r *mux.Router, db *sql.DB) error {
 	defineRoutes(r, db)
 	return nil
 }
 
-func autoMigrate(db *gorm.DB) error {
-	if err := db.AutoMigrate(&User{}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func defineRoutes(r *mux.Router, db *gorm.DB) {
+func defineRoutes(r *mux.Router, db *sql.DB) {
 	r.HandleFunc("/api/v1/register-user", registerNewUser(db)).Methods("POST")
 	r.HandleFunc("/api/v1/login", login(db)).Methods("POST")
 }

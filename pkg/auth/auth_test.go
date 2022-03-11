@@ -1,137 +1,98 @@
 package auth
 
 import (
-	"bytes"
+	"database/sql"
 	"encoding/json"
-	"fmt"
+	"github.com/nicjohnson145/mixer-service/pkg/db"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 )
 
-func newDB(t *testing.T) (*gorm.DB, func()) {
-	db, err := gorm.Open(sqlite.Open("auth-testing.db"), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
-	require.NoError(t, err)
-
-	err = autoMigrate(db)
+func newDB(t *testing.T) (*sql.DB, func()) {
+	db, err := db.NewDB("auth.db")
 	require.NoError(t, err)
 
 	cleanup := func() {
-		os.Remove("auth-testing.db")
+		err := os.Remove("auth.db")
+		if err != nil {
+			t.Log(err)
+			t.Fail()
+		}
 	}
-
 	return db, cleanup
 }
 
 func TestRegisterLogin(t *testing.T) {
+	// Suppress log output by default
+	log.SetOutput(ioutil.Discard)
 
-	body := func() io.Reader {
-		return bytes.NewReader([]byte(`{"username": "foo", "password": "bar"}`))
+	loginData := []struct {
+		name          string
+		input         string
+		expectedCode  int
+		expectedToken bool
+	}{
+		{
+			name:          "missing_user",
+			input:         `{"username": "not_a_user", "password": "bar"}`,
+			expectedCode:  http.StatusUnauthorized,
+			expectedToken: false,
+		},
+		{
+			name:          "incorrect_password",
+			input:         `{"username": "foo", "password": "wrong_password"}`,
+			expectedCode:  http.StatusUnauthorized,
+			expectedToken: false,
+		},
+		{
+			name:          "valid_login",
+			input:         `{"username": "foo", "password": "bar"}`,
+			expectedCode:  http.StatusOK,
+			expectedToken: true,
+		},
 	}
 
-	t.Run("register_login_happy", func(t *testing.T) {
-		db, cleanup := newDB(t)
-		defer cleanup()
+	db, cleanup := newDB(t)
+	defer cleanup()
 
-		registerHandler := registerNewUser(db)
-		loginHandler := login(db)
+	registerHandler := registerNewUser(db)
+	loginHandler := login(db)
 
-		// Register the user
-		registerReq, err := http.NewRequest("POST", "/register-user", body())
-		require.NoError(t, err)
-		rr := httptest.NewRecorder()
-		registerHandler(rr, registerReq)
-		require.Equal(t, http.StatusOK, rr.Result().StatusCode)
+	realUser := func() io.Reader {
+		return strings.NewReader(`{"username": "foo", "password": "bar"}`)
+	}
 
-		// Now we should be able to login as that user
-		loginReq, err := http.NewRequest("POST", "/login", body())
-		require.NoError(t, err)
-		rr = httptest.NewRecorder()
-		loginHandler(rr, loginReq)
-		require.Equal(t, http.StatusOK, rr.Result().StatusCode)
-	})
+	// Register the user
+	registerReq, err := http.NewRequest("POST", "/register-user", realUser())
+	require.NoError(t, err)
+	rr := httptest.NewRecorder()
+	registerHandler(rr, registerReq)
+	require.Equal(t, http.StatusOK, rr.Result().StatusCode)
 
-	t.Run("double_register_errors", func(t *testing.T) {
-		db, cleanup := newDB(t)
-		defer cleanup()
+	for _, tc := range loginData {
+		t.Run("login_cases_"+tc.name, func(t *testing.T) {
+			loginReq, err := http.NewRequest("POST", "/login", strings.NewReader(tc.input))
+			require.NoError(t, err)
+			rr = httptest.NewRecorder()
+			loginHandler(rr, loginReq)
+			require.Equal(t, tc.expectedCode, rr.Result().StatusCode)
 
-		registerHandler := registerNewUser(db)
-
-		// Register the user
-		registerReq, err := http.NewRequest("POST", "/register-user", body())
-		require.NoError(t, err)
-		rr := httptest.NewRecorder()
-		registerHandler(rr, registerReq)
-		require.Equal(t, http.StatusOK, rr.Result().StatusCode)
-
-		// Try and register the same user again should result in an error
-		registerReq, err = http.NewRequest("POST", "/register-user", body())
-		require.NoError(t, err)
-		rr = httptest.NewRecorder()
-		registerHandler(rr, registerReq)
-
-		require.Equal(t, http.StatusBadRequest, rr.Result().StatusCode)
-
-		var response RegisterNewUserResponse
-		err = json.NewDecoder(rr.Result().Body).Decode(&response)
-		require.NoError(t, err)
-		expected := RegisterNewUserResponse{
-			Error:   "user foo already registered",
-			Success: false,
-		}
-		require.Equal(t, expected, response)
-	})
-
-	t.Run("protected_no_token_rejected", func(t *testing.T) {
-		const return_val = "protected endpoint"
-
-		protected := func(w http.ResponseWriter, r *http.Request, c Claims) {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, return_val)
-		}
-
-		protectedHandler := Protected(protected)
-
-		protectedRequest, err := http.NewRequest("GET", "/protected", nil)
-		require.NoError(t, err)
-
-		rr := httptest.NewRecorder()
-		protectedHandler(rr, protectedRequest)
-
-		require.Equal(t, http.StatusUnauthorized, rr.Result().StatusCode)
-	})
-
-	t.Run("protected_valid_token_accepted", func(t *testing.T) {
-		const return_val = "protected endpoint"
-
-		protected := func(w http.ResponseWriter, r *http.Request, c Claims) {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, return_val)
-		}
-
-		protectedHandler := Protected(protected)
-
-		protectedRequest, err := http.NewRequest("GET", "/protected", nil)
-		token, err := generateTokenString(TokenInputs{Username: "foobar"})
-		require.NoError(t, err)
-		protectedRequest.Header.Set(AuthenticationHeader, token)
-		require.NoError(t, err)
-
-		rr := httptest.NewRecorder()
-		protectedHandler(rr, protectedRequest)
-
-		require.Equal(t, http.StatusOK, rr.Result().StatusCode)
-		got, err := ioutil.ReadAll(rr.Result().Body)
-		require.NoError(t, err)
-		require.Equal(t, return_val, string(got))
-	})
+			defer rr.Result().Body.Close()
+			var resp LoginResponse
+			err = json.NewDecoder(rr.Result().Body).Decode(&resp)
+			require.NoError(t, err)
+			if tc.expectedToken {
+				require.NotEmpty(t, resp.Token)
+			} else {
+				require.Empty(t, resp.Token)
+			}
+		})
+	}
 }
