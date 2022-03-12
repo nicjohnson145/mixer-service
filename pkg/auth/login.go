@@ -21,7 +21,7 @@ type LoginResponse struct {
 	Token   string `json:"token,omitempty"`
 }
 
-func login(db *sql.DB) HttpHandler {
+func login(db *sql.DB) common.HttpHandler {
 
 	writeLoginResponse := func(w http.ResponseWriter, status int, error string, token string) {
 		w.WriteHeader(status)

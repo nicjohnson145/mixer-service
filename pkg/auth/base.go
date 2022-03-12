@@ -12,7 +12,6 @@ type User struct {
 	Password string
 }
 
-type HttpHandler func(http.ResponseWriter, *http.Request)
 type ClaimsHttpHandler func(http.ResponseWriter, *http.Request, Claims)
 
 func Init(r *mux.Router, db *sql.DB) error {

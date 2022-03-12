@@ -20,7 +20,7 @@ type RegisterNewUserResponse struct {
 	Success bool   `json:"success"`
 }
 
-func registerNewUser(db *sql.DB) HttpHandler {
+func registerNewUser(db *sql.DB) common.HttpHandler {
 
 	writeRegisterNewUserReponse := func(w http.ResponseWriter, status int, msg string) {
 		w.WriteHeader(status)
