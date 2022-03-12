@@ -33,14 +33,14 @@ func createDrink(db *sql.DB) auth.ClaimsHttpHandler {
 		bytes, _ := json.Marshal(CreateDrinkResponse{
 			Error:   msg,
 			Success: status >= 200 && status <= 299,
-			ID: id,
+			ID:      id,
 		})
 		fmt.Fprintln(w, string(bytes))
 	}
 
 	writeBadRequest := func(w http.ResponseWriter, msg string, location string) {
 		log.WithFields(log.Fields{
-			"error": msg,
+			"error":     msg,
 			"operation": location,
 		}).Error("bad create drink request")
 		writeResponse(w, msg, http.StatusBadRequest, 0)
@@ -48,7 +48,7 @@ func createDrink(db *sql.DB) auth.ClaimsHttpHandler {
 
 	writeInternalError := func(w http.ResponseWriter, err error, location string) {
 		log.WithFields(log.Fields{
-			"error": err.Error(),
+			"error":     err.Error(),
 			"operation": location,
 		}).Error("internal error during drink creation")
 		writeResponse(w, err.Error(), http.StatusInternalServerError, 0)
@@ -89,13 +89,13 @@ func createDrink(db *sql.DB) auth.ClaimsHttpHandler {
 		}
 
 		model := Model{
-			Name: payload.Name,
-			Username: claims.Username,
+			Name:           payload.Name,
+			Username:       claims.Username,
 			PrimaryAlcohol: payload.PrimaryAlcohol,
 			PreferredGlass: payload.PreferredGlass,
-			Ingredients: ingredients,
-			Instructions: payload.Instructions,
-			Notes: payload.Notes,
+			Ingredients:    ingredients,
+			Instructions:   payload.Instructions,
+			Notes:          payload.Notes,
 		}
 
 		id, err := create(model, db)

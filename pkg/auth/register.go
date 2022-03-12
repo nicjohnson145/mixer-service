@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/nicjohnson145/mixer-service/pkg/common"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"github.com/nicjohnson145/mixer-service/pkg/common"
 )
 
 type RegisterNewUserRequest struct {

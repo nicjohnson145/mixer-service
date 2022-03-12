@@ -3,18 +3,18 @@ package drink
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/nicjohnson145/mixer-service/pkg/db"
-	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"github.com/nicjohnson145/mixer-service/pkg/auth/authtest"
+	"github.com/nicjohnson145/mixer-service/pkg/common"
+	"github.com/nicjohnson145/mixer-service/pkg/db"
 	// log "github.com/sirupsen/logrus"
+	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
-	"github.com/gorilla/mux"
-	"fmt"
 )
 
 func newDB(t *testing.T) (*sql.DB, func()) {
@@ -41,7 +41,7 @@ func TestCreateGet(t *testing.T) {
 		defineRoutes(router, db)
 
 		body := CreateDrinkRequest{
-			Name: "Daquari",
+			Name:           "Daquari",
 			PrimaryAlcohol: "Rum",
 			PreferredGlass: "Coupe",
 			Ingredients: []string{
@@ -57,7 +57,7 @@ func TestCreateGet(t *testing.T) {
 		rr := httptest.NewRecorder()
 		req, err := http.NewRequest(
 			http.MethodPost,
-			common.DrinksV1 + "/create",
+			common.DrinksV1+"/create",
 			strings.NewReader(string(bodyBytes)),
 		)
 		require.NoError(t, err)
@@ -67,7 +67,7 @@ func TestCreateGet(t *testing.T) {
 		require.Equal(t, http.StatusOK, rr.Result().StatusCode)
 
 		defer rr.Result().Body.Close()
-		var resp CreateDrinkResponse 
+		var resp CreateDrinkResponse
 		err = json.NewDecoder(rr.Result().Body).Decode(&resp)
 		require.NoError(t, err)
 
@@ -75,7 +75,7 @@ func TestCreateGet(t *testing.T) {
 		rr = httptest.NewRecorder()
 		req, err = http.NewRequest(
 			http.MethodGet,
-			common.DrinksV1 + fmt.Sprintf("/%v", resp.ID),
+			common.DrinksV1+fmt.Sprintf("/%v", resp.ID),
 			nil,
 		)
 		require.NoError(t, err)
@@ -89,8 +89,8 @@ func TestCreateGet(t *testing.T) {
 		require.NoError(t, err)
 
 		expectedDrink := &Drink{
-			Name: "Daquari",
-			Username: authtest.DefaultUsername,
+			Name:           "Daquari",
+			Username:       authtest.DefaultUsername,
 			PrimaryAlcohol: "Rum",
 			PreferredGlass: "Coupe",
 			Ingredients: []string{

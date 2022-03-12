@@ -1,22 +1,22 @@
 package drink
 
 import (
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
-	"database/sql"
-	"strconv"
-	"net/http"
-	"errors"
-	"github.com/gorilla/mux"
-	"encoding/json"
-	"fmt"
 	log "github.com/sirupsen/logrus"
+	"net/http"
+	"strconv"
 )
 
 type GetDrinkResponse struct {
-	Error string `json:"error"`
-	Success bool `json:"success"`
-	Drink *Drink `json:"drink"`
+	Error   string `json:"error"`
+	Success bool   `json:"success"`
+	Drink   *Drink `json:"drink"`
 }
 
 func getDrink(db *sql.DB) auth.ClaimsHttpHandler {
@@ -25,16 +25,16 @@ func getDrink(db *sql.DB) auth.ClaimsHttpHandler {
 		bytes, _ := json.Marshal(GetDrinkResponse{
 			Error:   msg,
 			Success: status >= 200 && status <= 299,
-			Drink: d,
+			Drink:   d,
 		})
 		fmt.Fprintln(w, string(bytes))
 	}
 
 	writeInternalError := func(w http.ResponseWriter, err error, location string, id int64) {
 		log.WithFields(log.Fields{
-			"error": err.Error(),
+			"error":     err.Error(),
 			"operation": location,
-			"id": id,
+			"id":        id,
 		}).Error("internal error while getting drink")
 		writeResponse(w, err.Error(), http.StatusInternalServerError, nil)
 	}
@@ -72,4 +72,3 @@ func getDrink(db *sql.DB) auth.ClaimsHttpHandler {
 		writeSucess(w, drink)
 	}
 }
-

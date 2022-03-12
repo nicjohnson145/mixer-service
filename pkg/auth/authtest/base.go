@@ -1,10 +1,10 @@
 package authtest
 
 import (
-	"github.com/nicjohnson145/mixer-service/pkg/auth"
-	"net/http"
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/stretchr/testify/require"
+	"net/http"
 	"testing"
 )
 
