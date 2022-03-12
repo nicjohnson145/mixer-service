@@ -16,11 +16,12 @@ import (
 )
 
 func newDB(t *testing.T) (*sql.DB, func()) {
-	db, err := db.NewDB("auth.db")
+	const name = "auth.db"
+	db, err := db.NewDB(name)
 	require.NoError(t, err)
 
 	cleanup := func() {
-		err := os.Remove("auth.db")
+		err := os.Remove(name)
 		if err != nil {
 			t.Log(err)
 			t.Fail()

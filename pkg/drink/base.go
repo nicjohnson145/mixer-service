@@ -2,11 +2,17 @@ package drink
 
 import (
 	"bytes"
+	"net/http"
 	"encoding/csv"
 	"strings"
+	"database/sql"
+	"github.com/gorilla/mux"
+	"github.com/nicjohnson145/mixer-service/pkg/common"
+	"github.com/nicjohnson145/mixer-service/pkg/auth"
 )
 
 type Drink struct {
+	ID             int64    `json:"id"`
 	Name           string   `json:"name"`
 	Username       string   `json:"username"`
 	PrimaryAlcohol string   `json:"primary_alcohol"`
@@ -14,6 +20,16 @@ type Drink struct {
 	Ingredients    []string `json:"ingredients"`
 	Instructions   string   `json:"instructions"`
 	Notes          string   `json:"notes"`
+}
+
+func Init(r *mux.Router, db *sql.DB) error {
+	defineRoutes(r, db)
+	return nil
+}
+
+func defineRoutes(r *mux.Router, db *sql.DB) {
+	r.HandleFunc(common.DrinksV1 + "/create", auth.Protected(createDrink(db))).Methods(http.MethodPost)
+	r.HandleFunc(common.DrinksV1 + "/{id:[0-9]+}", auth.Protected(getDrink(db))).Methods(http.MethodGet)
 }
 
 func fromDb(d Model) (Drink, error) {

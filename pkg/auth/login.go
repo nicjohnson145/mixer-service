@@ -82,7 +82,7 @@ func login(db *sql.DB) common.HttpHandler {
 			return
 		}
 
-		tokenStr, err := generateTokenString(TokenInputs{Username: payload.Username})
+		tokenStr, err := GenerateTokenString(TokenInputs{Username: payload.Username})
 		if err != nil {
 			writeInternalError(w, err, "generating jwt token")
 			return
