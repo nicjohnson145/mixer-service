@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"net/http"
+	"os"
 )
 
 var ErrNotFound = errors.New("not found")
@@ -14,3 +15,12 @@ const (
 	AuthV1   = ApiV1 + "/auth"
 	DrinksV1 = ApiV1 + "/drinks"
 )
+
+
+func DefaultedEnvVar(key string, defaultVal string) string {
+	if val, ok := os.LookupEnv(key); ok {
+		return val
+	} else {
+		return defaultVal
+	}
+}
