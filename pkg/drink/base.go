@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/csv"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
@@ -11,16 +12,22 @@ import (
 	"strings"
 )
 
-type Drink struct {
-	ID             int64    `json:"id"`
-	Name           string   `json:"name"`
-	Username       string   `json:"username"`
-	PrimaryAlcohol string   `json:"primary_alcohol"`
+type drinkData struct {
+	Name           string   `json:"name" validate:"required"`
+	PrimaryAlcohol string   `json:"primary_alcohol" validate:"required"`
 	PreferredGlass string   `json:"preferred_glass"`
-	Ingredients    []string `json:"ingredients"`
+	Ingredients    []string `json:"ingredients" validate:"required"`
 	Instructions   string   `json:"instructions"`
 	Notes          string   `json:"notes"`
 }
+
+type Drink struct {
+	ID       int64  `json:"id"`
+	Username string `json:"username" validate:"required"`
+	drinkData
+}
+
+var validate = validator.New()
 
 func Init(r *mux.Router, db *sql.DB) error {
 	defineRoutes(r, db)
@@ -30,6 +37,8 @@ func Init(r *mux.Router, db *sql.DB) error {
 func defineRoutes(r *mux.Router, db *sql.DB) {
 	r.HandleFunc(common.DrinksV1+"/create", auth.Protected(createDrink(db))).Methods(http.MethodPost)
 	r.HandleFunc(common.DrinksV1+"/{id:[0-9]+}", auth.Protected(getDrink(db))).Methods(http.MethodGet)
+	r.HandleFunc(common.DrinksV1+"/{id:[0-9]+}", auth.Protected(deleteDrink(db))).Methods(http.MethodDelete)
+	r.HandleFunc(common.DrinksV1+"/{id:[0-9]+}", auth.Protected(updateDrink(db))).Methods(http.MethodPut)
 }
 
 func fromDb(d Model) (Drink, error) {
@@ -39,6 +48,27 @@ func fromDb(d Model) (Drink, error) {
 	}
 
 	return Drink{
+		ID:       d.ID,
+		Username: d.Username,
+		drinkData: drinkData{
+			Name:           d.Name,
+			PrimaryAlcohol: d.PrimaryAlcohol,
+			PreferredGlass: d.PreferredGlass,
+			Ingredients:    ingredients,
+			Instructions:   d.Instructions,
+			Notes:          d.Notes,
+		},
+	}, nil
+}
+
+func toDb(d Drink) (Model, error) {
+	ingredients, err := toCSV(d.Ingredients)
+	if err != nil {
+		return Model{}, err
+	}
+
+	return Model{
+		ID:             d.ID,
 		Name:           d.Name,
 		Username:       d.Username,
 		PrimaryAlcohol: d.PrimaryAlcohol,
@@ -48,23 +78,6 @@ func fromDb(d Model) (Drink, error) {
 		Notes:          d.Notes,
 	}, nil
 }
-
-//func toDb(d Drink) (Model, error) {
-//    ingredients, err := toCSV(d.Ingredients)
-//    if err != nil {
-//        return Model{}, err
-//    }
-
-//    return Model{
-//        Name:           d.Name,
-//        Username:       d.Username,
-//        PrimaryAlcohol: d.PrimaryAlcohol,
-//        PreferredGlass: d.PreferredGlass,
-//        Ingredients:    ingredients,
-//        Instructions:   d.Instructions,
-//        Notes:          d.Notes,
-//    }, nil
-//}
 
 func toCSV(s []string) (string, error) {
 	var buf bytes.Buffer

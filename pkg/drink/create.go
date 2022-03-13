@@ -12,12 +12,7 @@ import (
 )
 
 type CreateDrinkRequest struct {
-	Name           string   `json:"name"`
-	PrimaryAlcohol string   `json:"primary_alcohol"`
-	PreferredGlass string   `json:"preferred_glass"`
-	Ingredients    []string `json:"ingredients"`
-	Instructions   string   `json:"instructions"`
-	Notes          string   `json:"notes"`
+	drinkData
 }
 
 type CreateDrinkResponse struct {
@@ -64,6 +59,12 @@ func createDrink(db *sql.DB) auth.ClaimsHttpHandler {
 		err := json.NewDecoder(r.Body).Decode(&payload)
 		if err != nil {
 			writeBadRequest(w, err.Error(), "decoding payload")
+			return
+		}
+
+		err = validate.Struct(payload)
+		if err != nil {
+			writeBadRequest(w, err.Error(), "checking required fields")
 			return
 		}
 

@@ -76,6 +76,23 @@ func getByNameAndUsername(name string, username string, db *sql.DB) (*Model, err
 	return &drink, nil
 }
 
+func updateModel(model Model, db *sql.DB) error {
+	sb := ModelStruct.Update(TableName, model)
+	sb.Where(sb.Equal("id", model.ID))
+	sql, args := sb.Build()
+	_, err := db.Exec(sql, args...)
+	return err
+}
+
+func deleteModel(id int64, db *sql.DB) error {
+	sb := ModelStruct.DeleteFrom(TableName)
+	sb.Where(sb.Equal("id", id))
+	sql, args := sb.Build()
+	_, err := db.Exec(sql, args...)
+	return err
+}
+
+
 func create(d Model, db *sql.DB) (int64, error) {
 	sql, args := ModelStruct.InsertIntoForTag(TableName, "required_insert", d).Build()
 	rows, err := db.Exec(sql, args...)
