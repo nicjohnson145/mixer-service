@@ -3,7 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 	"github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 )
@@ -76,7 +76,7 @@ func NewDBOrDie(path string) *sql.DB {
 }
 
 func NewDB(path string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", path)
+	db, err := sql.Open("sqlite", path)
 	if err != nil {
 		return nil, err
 	}
