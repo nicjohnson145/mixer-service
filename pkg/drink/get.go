@@ -69,6 +69,11 @@ func getDrink(db *sql.DB) auth.ClaimsHttpHandler {
 			return
 		}
 
+		if drink.Username != claims.Username {
+			writeNotFound(w)
+			return
+		}
+
 		writeSucess(w, drink)
 	}
 }
