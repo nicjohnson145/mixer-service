@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
+	"github.com/nicjohnson145/mixer-service/pkg/common"
 )
 
 type User struct {
@@ -20,8 +21,8 @@ func Init(r *mux.Router, db *sql.DB) error {
 }
 
 func defineRoutes(r *mux.Router, db *sql.DB) {
-	r.HandleFunc("/api/v1/register-user", registerNewUser(db)).Methods("POST")
-	r.HandleFunc("/api/v1/login", login(db)).Methods("POST")
+	r.HandleFunc(common.AuthV1 + "/register-user", registerNewUser(db)).Methods(http.MethodPost)
+	r.HandleFunc(common.AuthV1 + "/login", login(db)).Methods(http.MethodPost)
 }
 
 func hashPassword(pw string) (string, error) {
