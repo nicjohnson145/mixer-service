@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
+	log "github.com/sirupsen/logrus"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -14,7 +16,7 @@ const (
 	AuthenticationHeader = "MixerAuth"
 )
 
-var jwtSecret = []byte("my-super-secert-key")
+var jwtSecret = getSecretKey()
 
 var ErrInvalidToken = errors.New("invalid token")
 
@@ -25,6 +27,15 @@ type Claims struct {
 
 type TokenInputs struct {
 	Username string
+}
+
+func getSecretKey() []byte {
+	if val, ok := os.LookupEnv("JWT_SECRET"); ok {
+		return []byte(val)
+	} else {
+		log.Warning("No JWT_SECRET set, defaulting to hardcoded secret. THIS IS INSECURE!!")
+		return []byte("super-secret-jwt-key")
+	}
 }
 
 func GenerateTokenString(i TokenInputs) (string, error) {
