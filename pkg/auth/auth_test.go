@@ -3,8 +3,9 @@ package auth
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/nicjohnson145/mixer-service/pkg/db"
+	"github.com/gorilla/mux"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
+	"github.com/nicjohnson145/mixer-service/pkg/db"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -14,7 +15,6 @@ import (
 	"os"
 	"strings"
 	"testing"
-	"github.com/gorilla/mux"
 )
 
 func newDB(t *testing.T) (*sql.DB, func()) {
@@ -73,7 +73,7 @@ func TestRegisterLogin(t *testing.T) {
 	}
 
 	// Register the user
-	registerReq, err := http.NewRequest("POST", common.AuthV1 + "/register-user", realUser())
+	registerReq, err := http.NewRequest("POST", common.AuthV1+"/register-user", realUser())
 	require.NoError(t, err)
 	rr := httptest.NewRecorder()
 	router.ServeHTTP(rr, registerReq)
@@ -81,7 +81,7 @@ func TestRegisterLogin(t *testing.T) {
 
 	for _, tc := range loginData {
 		t.Run("login_cases_"+tc.name, func(t *testing.T) {
-			loginReq, err := http.NewRequest("POST", common.AuthV1 + "/login", strings.NewReader(tc.input))
+			loginReq, err := http.NewRequest("POST", common.AuthV1+"/login", strings.NewReader(tc.input))
 			require.NoError(t, err)
 			rr = httptest.NewRecorder()
 			router.ServeHTTP(rr, loginReq)

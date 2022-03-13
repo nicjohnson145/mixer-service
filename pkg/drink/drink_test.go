@@ -3,10 +3,10 @@ package drink
 import (
 	"database/sql"
 	"encoding/json"
+	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/nicjohnson145/mixer-service/pkg/auth/authtest"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"github.com/nicjohnson145/mixer-service/pkg/db"
-	"github.com/Azure/go-autorest/autorest/to"
 	// log "github.com/sirupsen/logrus"
 	"fmt"
 	"github.com/gorilla/mux"
