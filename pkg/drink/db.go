@@ -92,7 +92,6 @@ func deleteModel(id int64, db *sql.DB) error {
 	return err
 }
 
-
 func create(d Model, db *sql.DB) (int64, error) {
 	sql, args := ModelStruct.InsertIntoForTag(TableName, "required_insert", d).Build()
 	rows, err := db.Exec(sql, args...)

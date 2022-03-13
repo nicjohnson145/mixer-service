@@ -3,12 +3,12 @@ package drink
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/gorilla/mux"
 	"github.com/nicjohnson145/mixer-service/pkg/auth/authtest"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"github.com/nicjohnson145/mixer-service/pkg/db"
-	"fmt"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
@@ -159,8 +159,8 @@ func TestFullCRUDLoop(t *testing.T) {
 	expectedGetResp := GetDrinkResponse{
 		Success: true,
 		Drink: &Drink{
-			ID: 1,
-			Username: "user1",
+			ID:        1,
+			Username:  "user1",
 			drinkData: origDrinkData,
 		},
 	}
@@ -172,7 +172,7 @@ func TestFullCRUDLoop(t *testing.T) {
 
 	// Update it
 	updateReq := UpdateDrinkRequest{
-		ID: createResp.ID,
+		ID:        createResp.ID,
 		drinkData: updatedDrinkData,
 	}
 	// Updating as someone else should not work
@@ -184,8 +184,8 @@ func TestFullCRUDLoop(t *testing.T) {
 	expectedGetResp = GetDrinkResponse{
 		Success: true,
 		Drink: &Drink{
-			ID: 1,
-			Username: "user1",
+			ID:        1,
+			Username:  "user1",
 			drinkData: origDrinkData,
 		},
 	}
@@ -199,8 +199,8 @@ func TestFullCRUDLoop(t *testing.T) {
 	expectedGetResp = GetDrinkResponse{
 		Success: true,
 		Drink: &Drink{
-			ID: 1,
-			Username: "user1",
+			ID:        1,
+			Username:  "user1",
 			drinkData: updatedDrinkData,
 		},
 	}
@@ -214,8 +214,8 @@ func TestFullCRUDLoop(t *testing.T) {
 	expectedGetResp = GetDrinkResponse{
 		Success: true,
 		Drink: &Drink{
-			ID: 1,
-			Username: "user1",
+			ID:        1,
+			Username:  "user1",
 			drinkData: updatedDrinkData,
 		},
 	}
