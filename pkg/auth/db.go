@@ -23,10 +23,10 @@ func getUserByName(username string, db *sql.DB) (*UserModel, error) {
 	sql, args := b.Build()
 
 	rows, err := db.Query(sql, args...)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	hasRow := rows.Next()
 	if !hasRow {

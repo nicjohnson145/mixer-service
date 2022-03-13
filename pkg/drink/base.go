@@ -49,22 +49,22 @@ func fromDb(d Model) (Drink, error) {
 	}, nil
 }
 
-func toDb(d Drink) (Model, error) {
-	ingredients, err := toCSV(d.Ingredients)
-	if err != nil {
-		return Model{}, err
-	}
+//func toDb(d Drink) (Model, error) {
+//    ingredients, err := toCSV(d.Ingredients)
+//    if err != nil {
+//        return Model{}, err
+//    }
 
-	return Model{
-		Name:           d.Name,
-		Username:       d.Username,
-		PrimaryAlcohol: d.PrimaryAlcohol,
-		PreferredGlass: d.PreferredGlass,
-		Ingredients:    ingredients,
-		Instructions:   d.Instructions,
-		Notes:          d.Notes,
-	}, nil
-}
+//    return Model{
+//        Name:           d.Name,
+//        Username:       d.Username,
+//        PrimaryAlcohol: d.PrimaryAlcohol,
+//        PreferredGlass: d.PreferredGlass,
+//        Ingredients:    ingredients,
+//        Instructions:   d.Instructions,
+//        Notes:          d.Notes,
+//    }, nil
+//}
 
 func toCSV(s []string) (string, error) {
 	var buf bytes.Buffer

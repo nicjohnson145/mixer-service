@@ -29,11 +29,10 @@ func getByID(id int64, db *sql.DB) (*Model, error) {
 
 	sql, args := sb.Build()
 	rows, err := db.Query(sql, args...)
-	defer rows.Close()
-
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	hasRow := rows.Next()
 	if !hasRow {
@@ -58,11 +57,10 @@ func getByNameAndUsername(name string, username string, db *sql.DB) (*Model, err
 
 	sql, args := sb.Build()
 	rows, err := db.Query(sql, args...)
-	defer rows.Close()
-
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	hasRow := rows.Next()
 	if !hasRow {
