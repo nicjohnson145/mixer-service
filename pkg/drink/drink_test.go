@@ -33,13 +33,59 @@ func newDB(t *testing.T) (*sql.DB, func()) {
 	return db, cleanup
 }
 
-func TestCreateGet(t *testing.T) {
-	t.Run("create_get_happy", func(t *testing.T) {
+func setupDbAndRouter(t *testing.T) (*mux.Router, func()) {
 		db, cleanup := newDB(t)
-		defer cleanup()
-
 		router := mux.NewRouter()
 		defineRoutes(router, db)
+		return router, cleanup
+}
+
+func postCreateDrink(t *testing.T, router *mux.Router, r CreateDrinkRequest, o authtest.AuthOpts) (int, CreateDrinkResponse) {
+	bodyBytes, err := json.Marshal(r)
+	require.NoError(t, err)
+
+	rr := httptest.NewRecorder()
+	req, err := http.NewRequest(
+		http.MethodPost,
+		common.DrinksV1+"/create",
+		strings.NewReader(string(bodyBytes)),
+	)
+	require.NoError(t, err)
+	authtest.AuthenticatedRequest(t, req, o)
+
+	router.ServeHTTP(rr, req)
+
+	defer rr.Result().Body.Close()
+	var resp CreateDrinkResponse
+	err = json.NewDecoder(rr.Result().Body).Decode(&resp)
+	require.NoError(t, err)
+
+	return rr.Result().StatusCode, resp
+}
+
+func getDrinkByID(t *testing.T, router *mux.Router, id int64, o authtest.AuthOpts) (int, GetDrinkResponse) {
+	rr := httptest.NewRecorder()
+	req, err := http.NewRequest(
+		http.MethodGet,
+		common.DrinksV1+fmt.Sprintf("/%v", id),
+		nil,
+	)
+	require.NoError(t, err)
+	authtest.AuthenticatedRequest(t, req, o)
+	router.ServeHTTP(rr, req)
+
+	defer rr.Result().Body.Close()
+	var resp GetDrinkResponse
+	err = json.NewDecoder(rr.Result().Body).Decode(&resp)
+	require.NoError(t, err)
+
+	return rr.Result().StatusCode, resp
+}
+
+func TestCreateGet(t *testing.T) {
+	t.Run("create_get_happy", func(t *testing.T) {
+		router, cleanup := setupDbAndRouter(t)
+		defer cleanup()
 
 		body := CreateDrinkRequest{
 			Name:           "Daquari",
@@ -52,42 +98,11 @@ func TestCreateGet(t *testing.T) {
 			},
 		}
 
-		bodyBytes, err := json.Marshal(body)
-		require.NoError(t, err)
+		status, resp := postCreateDrink(t, router, body, authtest.AuthOpts{})
+		require.Equal(t, http.StatusOK, status)
 
-		rr := httptest.NewRecorder()
-		req, err := http.NewRequest(
-			http.MethodPost,
-			common.DrinksV1+"/create",
-			strings.NewReader(string(bodyBytes)),
-		)
-		require.NoError(t, err)
-		authtest.AuthenticatedRequest(t, req, authtest.AuthOpts{})
-
-		router.ServeHTTP(rr, req)
-		require.Equal(t, http.StatusOK, rr.Result().StatusCode)
-
-		defer rr.Result().Body.Close()
-		var resp CreateDrinkResponse
-		err = json.NewDecoder(rr.Result().Body).Decode(&resp)
-		require.NoError(t, err)
-
-		// Now retrieve the drink
-		rr = httptest.NewRecorder()
-		req, err = http.NewRequest(
-			http.MethodGet,
-			common.DrinksV1+fmt.Sprintf("/%v", resp.ID),
-			nil,
-		)
-		require.NoError(t, err)
-		authtest.AuthenticatedRequest(t, req, authtest.AuthOpts{})
-		router.ServeHTTP(rr, req)
-		require.Equal(t, http.StatusOK, rr.Result().StatusCode)
-
-		defer rr.Result().Body.Close()
-		var getResp GetDrinkResponse
-		err = json.NewDecoder(rr.Result().Body).Decode(&getResp)
-		require.NoError(t, err)
+		status, getResp := getDrinkByID(t, router, resp.ID, authtest.AuthOpts{})
+		require.Equal(t, http.StatusOK, status)
 
 		expectedDrink := &Drink{
 			Name:           "Daquari",
@@ -104,11 +119,8 @@ func TestCreateGet(t *testing.T) {
 	})
 
 	t.Run("fetch_other_users_drink", func(t *testing.T) {
-		db, cleanup := newDB(t)
+		router, cleanup := setupDbAndRouter(t)
 		defer cleanup()
-
-		router := mux.NewRouter()
-		defineRoutes(router, db)
 
 		body := CreateDrinkRequest{
 			Name:           "Daquari",
@@ -121,36 +133,10 @@ func TestCreateGet(t *testing.T) {
 			},
 		}
 
-		bodyBytes, err := json.Marshal(body)
-		require.NoError(t, err)
+		status, resp := postCreateDrink(t, router, body, authtest.AuthOpts{Username: to.StringPtr("user1")})
+		require.Equal(t, http.StatusOK, status)
 
-		rr := httptest.NewRecorder()
-		req, err := http.NewRequest(
-			http.MethodPost,
-			common.DrinksV1+"/create",
-			strings.NewReader(string(bodyBytes)),
-		)
-		require.NoError(t, err)
-		authtest.AuthenticatedRequest(t, req, authtest.AuthOpts{Username: to.StringPtr("user1")})
-
-		router.ServeHTTP(rr, req)
-		require.Equal(t, http.StatusOK, rr.Result().StatusCode)
-
-		defer rr.Result().Body.Close()
-		var resp CreateDrinkResponse
-		err = json.NewDecoder(rr.Result().Body).Decode(&resp)
-		require.NoError(t, err)
-
-		// Now retrieve the drink
-		rr = httptest.NewRecorder()
-		req, err = http.NewRequest(
-			http.MethodGet,
-			common.DrinksV1+fmt.Sprintf("/%v", resp.ID),
-			nil,
-		)
-		require.NoError(t, err)
-		authtest.AuthenticatedRequest(t, req, authtest.AuthOpts{Username: to.StringPtr("user2")})
-		router.ServeHTTP(rr, req)
-		require.Equal(t, http.StatusNotFound, rr.Result().StatusCode)
+		status, _ = getDrinkByID(t, router, resp.ID, authtest.AuthOpts{Username: to.StringPtr("user2")})
+		require.Equal(t, http.StatusNotFound, status)
 	})
 }
