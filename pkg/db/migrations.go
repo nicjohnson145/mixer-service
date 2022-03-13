@@ -33,6 +33,35 @@ func createMigrations() *migrate.MemoryMigrationSource {
 				},
 				Down: []string{"DROP TABLE user;"},
 			},
+			{
+				Id: nextId(),
+				Up: []string{
+					`
+					CREATE TABLE drink (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						name TEXT NOT NULL,
+						username TEXT NOT NULL,
+						primary_alcohol TEXT NOT NULL,
+						preferred_glass TEXT,
+						ingredients TEXT NOT NULL,
+						instructions TEXT,
+						notes TEXT,
+						UNIQUE(name, username),
+						FOREIGN KEY (username) REFERENCES user(username) ON DELETE CASCADE ON UPDATE CASCADE
+					);
+					`,
+				},
+				Down: []string{
+					`
+					DROP TABLE drink;
+					`,
+				},
+			},
+			//{
+			//    Id: nextId(),
+			//    Up: []string{},
+			//    Down: []string{},
+			//},
 		},
 	}
 }

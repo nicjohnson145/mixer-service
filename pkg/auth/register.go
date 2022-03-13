@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/nicjohnson145/mixer-service/pkg/common"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -19,7 +20,7 @@ type RegisterNewUserResponse struct {
 	Success bool   `json:"success"`
 }
 
-func registerNewUser(db *sql.DB) HttpHandler {
+func registerNewUser(db *sql.DB) common.HttpHandler {
 
 	writeRegisterNewUserReponse := func(w http.ResponseWriter, status int, msg string) {
 		w.WriteHeader(status)
@@ -58,7 +59,7 @@ func registerNewUser(db *sql.DB) HttpHandler {
 		}
 
 		existingUser, err := getUserByName(payload.Username, db)
-		if err != nil && !errors.Is(err, ErrNotFound) {
+		if err != nil && !errors.Is(err, common.ErrNotFound) {
 			writeInternalError(w, err, "checking for existing user")
 			return
 		}

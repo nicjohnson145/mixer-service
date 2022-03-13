@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"net/http"
 	"time"
 )
@@ -26,7 +27,7 @@ type TokenInputs struct {
 	Username string
 }
 
-func generateTokenString(i TokenInputs) (string, error) {
+func GenerateTokenString(i TokenInputs) (string, error) {
 	claims := &Claims{
 		Username: i.Username,
 		StandardClaims: jwt.StandardClaims{
@@ -54,7 +55,7 @@ func validateToken(token string) (Claims, error) {
 	return claims, nil
 }
 
-func Protected(handler ClaimsHttpHandler) HttpHandler {
+func Protected(handler ClaimsHttpHandler) common.HttpHandler {
 
 	writeUnauthorized := func(w http.ResponseWriter) {
 		w.WriteHeader(http.StatusUnauthorized)

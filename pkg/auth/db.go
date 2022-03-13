@@ -2,8 +2,8 @@ package auth
 
 import (
 	"database/sql"
-	"errors"
 	"github.com/huandu/go-sqlbuilder"
+	"github.com/nicjohnson145/mixer-service/pkg/common"
 )
 
 type UserModel struct {
@@ -14,8 +14,6 @@ type UserModel struct {
 const (
 	UserTable = "user"
 )
-
-var ErrNotFound = errors.New("not found")
 
 var UserModelStruct = sqlbuilder.NewStruct(new(UserModel))
 
@@ -32,7 +30,7 @@ func getUserByName(username string, db *sql.DB) (*UserModel, error) {
 
 	hasRow := rows.Next()
 	if !hasRow {
-		return nil, ErrNotFound
+		return nil, common.ErrNotFound
 	}
 
 	var user UserModel

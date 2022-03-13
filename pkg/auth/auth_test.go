@@ -3,6 +3,8 @@ package auth
 import (
 	"database/sql"
 	"encoding/json"
+	"github.com/gorilla/mux"
+	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"github.com/nicjohnson145/mixer-service/pkg/db"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
@@ -16,11 +18,12 @@ import (
 )
 
 func newDB(t *testing.T) (*sql.DB, func()) {
-	db, err := db.NewDB("auth.db")
+	const name = "auth.db"
+	db, err := db.NewDB(name)
 	require.NoError(t, err)
 
 	cleanup := func() {
-		err := os.Remove("auth.db")
+		err := os.Remove(name)
 		if err != nil {
 			t.Log(err)
 			t.Fail()
@@ -62,26 +65,26 @@ func TestRegisterLogin(t *testing.T) {
 	db, cleanup := newDB(t)
 	defer cleanup()
 
-	registerHandler := registerNewUser(db)
-	loginHandler := login(db)
+	router := mux.NewRouter()
+	defineRoutes(router, db)
 
 	realUser := func() io.Reader {
 		return strings.NewReader(`{"username": "foo", "password": "bar"}`)
 	}
 
 	// Register the user
-	registerReq, err := http.NewRequest("POST", "/register-user", realUser())
+	registerReq, err := http.NewRequest("POST", common.AuthV1+"/register-user", realUser())
 	require.NoError(t, err)
 	rr := httptest.NewRecorder()
-	registerHandler(rr, registerReq)
+	router.ServeHTTP(rr, registerReq)
 	require.Equal(t, http.StatusOK, rr.Result().StatusCode)
 
 	for _, tc := range loginData {
 		t.Run("login_cases_"+tc.name, func(t *testing.T) {
-			loginReq, err := http.NewRequest("POST", "/login", strings.NewReader(tc.input))
+			loginReq, err := http.NewRequest("POST", common.AuthV1+"/login", strings.NewReader(tc.input))
 			require.NoError(t, err)
 			rr = httptest.NewRecorder()
-			loginHandler(rr, loginReq)
+			router.ServeHTTP(rr, loginReq)
 			require.Equal(t, tc.expectedCode, rr.Result().StatusCode)
 
 			defer rr.Result().Body.Close()

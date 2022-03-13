@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/nicjohnson145/mixer-service/pkg/common"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -20,7 +21,7 @@ type LoginResponse struct {
 	Token   string `json:"token,omitempty"`
 }
 
-func login(db *sql.DB) HttpHandler {
+func login(db *sql.DB) common.HttpHandler {
 
 	writeLoginResponse := func(w http.ResponseWriter, status int, error string, token string) {
 		w.WriteHeader(status)
@@ -67,7 +68,7 @@ func login(db *sql.DB) HttpHandler {
 		}
 		existingUser, err := getUserByName(payload.Username, db)
 		if err != nil {
-			if errors.Is(err, ErrNotFound) {
+			if errors.Is(err, common.ErrNotFound) {
 				writeUnauthorizedError(w, payload.Username, "fetching from db")
 				return
 			} else {
@@ -81,7 +82,7 @@ func login(db *sql.DB) HttpHandler {
 			return
 		}
 
-		tokenStr, err := generateTokenString(TokenInputs{Username: payload.Username})
+		tokenStr, err := GenerateTokenString(TokenInputs{Username: payload.Username})
 		if err != nil {
 			writeInternalError(w, err, "generating jwt token")
 			return
