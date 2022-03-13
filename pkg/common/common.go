@@ -16,7 +16,6 @@ const (
 	DrinksV1 = ApiV1 + "/drinks"
 )
 
-
 func DefaultedEnvVar(key string, defaultVal string) string {
 	if val, ok := os.LookupEnv(key); ok {
 		return val

@@ -3,9 +3,9 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	_ "modernc.org/sqlite"
 	"github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
+	_ "modernc.org/sqlite"
 )
 
 func createMigrations() *migrate.MemoryMigrationSource {
