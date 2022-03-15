@@ -21,6 +21,7 @@ type Model struct {
 	Ingredients    string `db:"ingredients" fieldtag:"required_insert"`
 	Instructions   string `db:"instructions" fieldtag:"required_insert"`
 	Notes          string `db:"notes" fieldtag:"required_insert"`
+	Publicity      string `db:"publicity" fieldtag:"required_insert"`
 }
 
 func getByID(id int64, db *sql.DB) (*Model, error) {
@@ -74,6 +75,49 @@ func getByNameAndUsername(name string, username string, db *sql.DB) (*Model, err
 	}
 
 	return &drink, nil
+}
+
+func getAllPublicDrinksByUser(username string, db *sql.DB) ([]Model, error) {
+	drinks, err := getAllDrinksByUser(username, db)
+	if err != nil {
+		return []Model{}, err
+	}
+
+	publicDrinks := make([]Model, 0, len(drinks))
+	for _, d := range drinks {
+		if d.Publicity == DrinkPublicityPublic {
+			publicDrinks = append(publicDrinks, d)
+		}
+	}
+	return publicDrinks, nil
+}
+
+func getAllDrinksByUser(username string, db *sql.DB) ([]Model, error) {
+	sb := ModelStruct.SelectFrom(TableName)
+	sb.Where(
+		sb.Equal("username", username),
+	)
+	sb.OrderBy("id")
+	sb.Asc()
+
+	sql, args := sb.Build()
+	rows, err := db.Query(sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	drinks := []Model{}
+	for rows.Next() {
+		var d Model
+		err := rows.Scan(ModelStruct.Addr(&d)...)
+		if err != nil {
+			return []Model{}, err
+		}
+		drinks = append(drinks, d)
+	}
+
+	return drinks, rows.Err()
 }
 
 func updateModel(model Model, db *sql.DB) error {

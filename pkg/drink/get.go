@@ -58,7 +58,7 @@ func getDrink(db *sql.DB) auth.ClaimsHttpHandler {
 				writeNotFound(w)
 				return
 			} else {
-				writeInternalError(w, err, "getting drin", id)
+				writeInternalError(w, err, "getting drink", id)
 				return
 			}
 		}
@@ -69,7 +69,7 @@ func getDrink(db *sql.DB) auth.ClaimsHttpHandler {
 			return
 		}
 
-		if drink.Username != claims.Username {
+		if drink.Username != claims.Username && drink.Publicity != DrinkPublicityPublic {
 			writeNotFound(w)
 			return
 		}

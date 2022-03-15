@@ -12,6 +12,11 @@ import (
 	"strings"
 )
 
+const (
+	DrinkPublicityPublic  = "public"
+	DrinkPublicityPrivate = "private"
+)
+
 type drinkData struct {
 	Name           string   `json:"name" validate:"required"`
 	PrimaryAlcohol string   `json:"primary_alcohol" validate:"required"`
@@ -19,6 +24,7 @@ type drinkData struct {
 	Ingredients    []string `json:"ingredients" validate:"required"`
 	Instructions   string   `json:"instructions"`
 	Notes          string   `json:"notes"`
+	Publicity      string   `json:"publicity" validate:"required"`
 }
 
 type Drink struct {
@@ -35,10 +41,11 @@ func Init(r *mux.Router, db *sql.DB) error {
 }
 
 func defineRoutes(r *mux.Router, db *sql.DB) {
-	r.HandleFunc(common.DrinksV1+"/create", auth.Protected(createDrink(db))).Methods(http.MethodPost)
-	r.HandleFunc(common.DrinksV1+"/{id:[0-9]+}", auth.Protected(getDrink(db))).Methods(http.MethodGet)
-	r.HandleFunc(common.DrinksV1+"/{id:[0-9]+}", auth.Protected(deleteDrink(db))).Methods(http.MethodDelete)
-	r.HandleFunc(common.DrinksV1+"/{id:[0-9]+}", auth.Protected(updateDrink(db))).Methods(http.MethodPut)
+	r.HandleFunc(common.DrinksV1+"/create", auth.RequiresValidToken(createDrink(db))).Methods(http.MethodPost)
+	r.HandleFunc(common.DrinksV1+"/{id:[0-9]+}", auth.RequiresValidToken(getDrink(db))).Methods(http.MethodGet)
+	r.HandleFunc(common.DrinksV1+"/{id:[0-9]+}", auth.RequiresValidToken(deleteDrink(db))).Methods(http.MethodDelete)
+	r.HandleFunc(common.DrinksV1+"/{id:[0-9]+}", auth.RequiresValidToken(updateDrink(db))).Methods(http.MethodPut)
+	r.HandleFunc(common.DrinksV1+"/by-user/{username}", auth.RequiresValidToken(getDrinksByUser(db))).Methods(http.MethodGet)
 }
 
 func fromDb(d Model) (Drink, error) {
@@ -57,6 +64,7 @@ func fromDb(d Model) (Drink, error) {
 			Ingredients:    ingredients,
 			Instructions:   d.Instructions,
 			Notes:          d.Notes,
+			Publicity:      d.Publicity,
 		},
 	}, nil
 }
@@ -76,6 +84,7 @@ func toDb(d Drink) (Model, error) {
 		Ingredients:    ingredients,
 		Instructions:   d.Instructions,
 		Notes:          d.Notes,
+		Publicity:      d.Publicity,
 	}, nil
 }
 
