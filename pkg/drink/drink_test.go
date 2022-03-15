@@ -122,6 +122,25 @@ func t_deleteDrink(t *testing.T, router *mux.Router, id int64, o authtest.AuthOp
 	return rr.Result().StatusCode, resp
 }
 
+func t_getDrinksByUser(t *testing.T, router *mux.Router, user string, o authtest.AuthOpts) (int, GetDrinksByUserResponse) {
+	rr := httptest.NewRecorder()
+	req, err := http.NewRequest(
+		http.MethodGet,
+		common.DrinksV1+"/by-user/" + user,
+		nil,
+	)
+	require.NoError(t, err)
+	authtest.AuthenticatedRequest(t, req, o)
+	router.ServeHTTP(rr, req)
+
+	defer rr.Result().Body.Close()
+	var resp GetDrinksByUserResponse
+	err = json.NewDecoder(rr.Result().Body).Decode(&resp)
+	require.NoError(t, err)
+
+	return rr.Result().StatusCode, resp
+}
+
 
 func TestFullCRUDLoop(t *testing.T) {
 	router, cleanup := setupDbAndRouter(t)
@@ -262,6 +281,94 @@ func TestPublicDrinksFetchableByAnyone(t *testing.T) {
 			ID:        1,
 			Username:  "user1",
 			drinkData: drinkData,
+		},
+	}
+	require.Equal(t, expectedGetResp, getResp)
+}
+
+func TestGetDrinksByUser(t *testing.T) {
+	router, cleanup := setupDbAndRouter(t)
+	defer cleanup()
+
+	first := drinkData{
+		Name:           "Daquari",
+		PrimaryAlcohol: "Rum",
+		PreferredGlass: "Coupe",
+		Ingredients: []string{
+			"2.5 oz white rum",
+			"0.5 oz simple syrup",
+			"1 oz lime",
+		},
+		Publicity: DrinkPublicityPublic,
+	}
+	second := drinkData{
+		Name:           "Bee's Knees",
+		PrimaryAlcohol: "Gin",
+		PreferredGlass: "Coupe",
+		Ingredients: []string{
+			"0.75 oz honey syrup",
+			"0.75 oz lemon",
+			"2 oz gin",
+		},
+		Publicity: DrinkPublicityPublic,
+	}
+	third := drinkData{
+		Name:           "Secret Drink",
+		PrimaryAlcohol: "Scotch",
+		PreferredGlass: "Rocks",
+		Ingredients: []string{
+			"2 oz scotch",
+		},
+		Publicity: DrinkPublicityPrivate,
+	}
+
+	drinks := []drinkData{first, second, third}
+	for _, d := range drinks {
+		status, _ := t_createDrink(t, router, CreateDrinkRequest{drinkData: d}, authtest.AuthOpts{Username: to.StringPtr("user1")})
+		require.Equal(t, http.StatusOK, status)
+	}
+
+	// Fetching as user1 should result in all drinks
+	status, getResp := t_getDrinksByUser(t, router, "user1", authtest.AuthOpts{Username: to.StringPtr("user1")})
+	require.Equal(t, http.StatusOK, status)
+	expectedGetResp := GetDrinksByUserResponse{
+		Success: true,
+		Drinks: []Drink{
+			{
+				ID: 1,
+				Username: "user1",
+				drinkData: first,
+			},
+			{
+				ID: 2,
+				Username: "user1",
+				drinkData: second,
+			},
+			{
+				ID: 3,
+				Username: "user1",
+				drinkData: third,
+			},
+		},
+	}
+	require.Equal(t, expectedGetResp, getResp)
+
+	// Fetching as user2 should only return the public drinks
+	status, getResp = t_getDrinksByUser(t, router, "user1", authtest.AuthOpts{Username: to.StringPtr("user2")})
+	require.Equal(t, http.StatusOK, status)
+	expectedGetResp = GetDrinksByUserResponse{
+		Success: true,
+		Drinks: []Drink{
+			{
+				ID: 1,
+				Username: "user1",
+				drinkData: first,
+			},
+			{
+				ID: 2,
+				Username: "user1",
+				drinkData: second,
+			},
 		},
 	}
 	require.Equal(t, expectedGetResp, getResp)

@@ -66,7 +66,7 @@ func validateToken(token string) (Claims, error) {
 	return claims, nil
 }
 
-func Protected(handler ClaimsHttpHandler) common.HttpHandler {
+func RequiresValidToken(handler ClaimsHttpHandler) common.HttpHandler {
 
 	writeUnauthorized := func(w http.ResponseWriter) {
 		w.WriteHeader(http.StatusUnauthorized)
