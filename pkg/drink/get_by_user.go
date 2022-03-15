@@ -56,7 +56,6 @@ func getDrinksByUser(db *sql.DB) auth.ClaimsHttpHandler {
 			return
 		}
 
-
 		drinks := make([]Drink, 0, len(modelList))
 		for _, m := range modelList {
 			d, err := fromDb(m)

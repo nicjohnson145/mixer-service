@@ -103,4 +103,3 @@ func fromCSV(s string) ([]string, error) {
 	r := csv.NewReader(strings.NewReader(s))
 	return r.Read()
 }
-

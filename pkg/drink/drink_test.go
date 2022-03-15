@@ -126,7 +126,7 @@ func t_getDrinksByUser(t *testing.T, router *mux.Router, user string, o authtest
 	rr := httptest.NewRecorder()
 	req, err := http.NewRequest(
 		http.MethodGet,
-		common.DrinksV1+"/by-user/" + user,
+		common.DrinksV1+"/by-user/"+user,
 		nil,
 	)
 	require.NoError(t, err)
@@ -140,7 +140,6 @@ func t_getDrinksByUser(t *testing.T, router *mux.Router, user string, o authtest
 
 	return rr.Result().StatusCode, resp
 }
-
 
 func TestFullCRUDLoop(t *testing.T) {
 	router, cleanup := setupDbAndRouter(t)
@@ -335,18 +334,18 @@ func TestGetDrinksByUser(t *testing.T) {
 		Success: true,
 		Drinks: []Drink{
 			{
-				ID: 1,
-				Username: "user1",
+				ID:        1,
+				Username:  "user1",
 				drinkData: first,
 			},
 			{
-				ID: 2,
-				Username: "user1",
+				ID:        2,
+				Username:  "user1",
 				drinkData: second,
 			},
 			{
-				ID: 3,
-				Username: "user1",
+				ID:        3,
+				Username:  "user1",
 				drinkData: third,
 			},
 		},
@@ -360,13 +359,13 @@ func TestGetDrinksByUser(t *testing.T) {
 		Success: true,
 		Drinks: []Drink{
 			{
-				ID: 1,
-				Username: "user1",
+				ID:        1,
+				Username:  "user1",
 				drinkData: first,
 			},
 			{
-				ID: 2,
-				Username: "user1",
+				ID:        2,
+				Username:  "user1",
 				drinkData: second,
 			},
 		},
