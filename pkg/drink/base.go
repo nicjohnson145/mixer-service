@@ -12,6 +12,11 @@ import (
 	"strings"
 )
 
+const (
+	DrinkPublicityPublic  = "public"
+	DrinkPublicityPrivate = "private"
+)
+
 type drinkData struct {
 	Name           string   `json:"name" validate:"required"`
 	PrimaryAlcohol string   `json:"primary_alcohol" validate:"required"`
@@ -19,6 +24,7 @@ type drinkData struct {
 	Ingredients    []string `json:"ingredients" validate:"required"`
 	Instructions   string   `json:"instructions"`
 	Notes          string   `json:"notes"`
+	Publicity      string   `json:"publicity" validate:"required"`
 }
 
 type Drink struct {
@@ -57,6 +63,7 @@ func fromDb(d Model) (Drink, error) {
 			Ingredients:    ingredients,
 			Instructions:   d.Instructions,
 			Notes:          d.Notes,
+			Publicity:      d.Publicity,
 		},
 	}, nil
 }
@@ -76,6 +83,7 @@ func toDb(d Drink) (Model, error) {
 		Ingredients:    ingredients,
 		Instructions:   d.Instructions,
 		Notes:          d.Notes,
+		Publicity:      d.Publicity,
 	}, nil
 }
 
@@ -94,3 +102,4 @@ func fromCSV(s string) ([]string, error) {
 	r := csv.NewReader(strings.NewReader(s))
 	return r.Read()
 }
+

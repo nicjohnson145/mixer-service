@@ -122,6 +122,7 @@ func t_deleteDrink(t *testing.T, router *mux.Router, id int64, o authtest.AuthOp
 	return rr.Result().StatusCode, resp
 }
 
+
 func TestFullCRUDLoop(t *testing.T) {
 	router, cleanup := setupDbAndRouter(t)
 	defer cleanup()
@@ -135,6 +136,7 @@ func TestFullCRUDLoop(t *testing.T) {
 			"0.5 oz simple syrup",
 			"1 oz lime",
 		},
+		Publicity: DrinkPublicityPrivate,
 	}
 	updatedDrinkData := drinkData{
 		Name:           "Daquari",
@@ -145,6 +147,7 @@ func TestFullCRUDLoop(t *testing.T) {
 			"0.5 oz simple syrup",
 			"0.75 oz lime",
 		},
+		Publicity: DrinkPublicityPrivate,
 	}
 
 	body := CreateDrinkRequest{drinkData: origDrinkData}
@@ -226,4 +229,40 @@ func TestFullCRUDLoop(t *testing.T) {
 	require.Equal(t, http.StatusOK, status)
 	status, _ = t_getDrink(t, router, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
 	require.Equal(t, http.StatusNotFound, status)
+}
+
+func TestPublicDrinksFetchableByAnyone(t *testing.T) {
+	router, cleanup := setupDbAndRouter(t)
+	defer cleanup()
+
+	drinkData := drinkData{
+		Name:           "Daquari",
+		PrimaryAlcohol: "Rum",
+		PreferredGlass: "Coupe",
+		Ingredients: []string{
+			"2.5 oz white rum",
+			"0.5 oz simple syrup",
+			"1 oz lime",
+		},
+		Publicity: DrinkPublicityPublic,
+	}
+
+	body := CreateDrinkRequest{drinkData: drinkData}
+
+	// Creating a drink
+	status, createResp := t_createDrink(t, router, body, authtest.AuthOpts{Username: to.StringPtr("user1")})
+	require.Equal(t, http.StatusOK, status)
+
+	// Fetch it as someone else, it should succeed since it's public
+	status, getResp := t_getDrink(t, router, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user2")})
+	require.Equal(t, http.StatusOK, status)
+	expectedGetResp := GetDrinkResponse{
+		Success: true,
+		Drink: &Drink{
+			ID:        1,
+			Username:  "user1",
+			drinkData: drinkData,
+		},
+	}
+	require.Equal(t, expectedGetResp, getResp)
 }

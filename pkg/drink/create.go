@@ -97,6 +97,7 @@ func createDrink(db *sql.DB) auth.ClaimsHttpHandler {
 			Ingredients:    ingredients,
 			Instructions:   payload.Instructions,
 			Notes:          payload.Notes,
+			Publicity:      payload.Publicity,
 		}
 
 		id, err := create(model, db)

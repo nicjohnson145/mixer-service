@@ -57,6 +57,19 @@ func createMigrations() *migrate.MemoryMigrationSource {
 					`,
 				},
 			},
+			{
+				Id: nextId(),
+				Up: []string{
+					`
+					ALTER TABLE drink ADD COLUMN publicity TEXT NOT NULL;
+					`,
+				},
+				Down: []string{
+					`
+					ALTER TABLE drink DROP COLUMN publicity;
+					`,
+				},
+			},
 			//{
 			//    Id: nextId(),
 			//    Up: []string{},

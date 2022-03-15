@@ -97,6 +97,7 @@ func updateDrink(db *sql.DB) auth.ClaimsHttpHandler {
 				Ingredients:    payload.Ingredients,
 				Instructions:   payload.Instructions,
 				Notes:          payload.Notes,
+				Publicity:      payload.Publicity,
 			},
 		})
 		if err != nil {

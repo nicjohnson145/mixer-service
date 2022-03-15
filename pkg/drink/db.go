@@ -21,6 +21,7 @@ type Model struct {
 	Ingredients    string `db:"ingredients" fieldtag:"required_insert"`
 	Instructions   string `db:"instructions" fieldtag:"required_insert"`
 	Notes          string `db:"notes" fieldtag:"required_insert"`
+	Publicity      string `db:"publicity" fieldtag:"required_insert"`
 }
 
 func getByID(id int64, db *sql.DB) (*Model, error) {
