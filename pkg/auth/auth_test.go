@@ -1,41 +1,23 @@
 package auth
 
 import (
-	"database/sql"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
-	"github.com/nicjohnson145/mixer-service/pkg/db"
-	log "github.com/sirupsen/logrus"
+	"github.com/nicjohnson145/mixer-service/pkg/common/commontest"
 	"github.com/stretchr/testify/require"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 )
 
-func newDB(t *testing.T) (*sql.DB, func()) {
-	const name = "auth.db"
-	db, err := db.NewDB(name)
-	require.NoError(t, err)
-
-	cleanup := func() {
-		err := os.Remove(name)
-		if err != nil {
-			t.Log(err)
-			t.Fail()
-		}
-	}
-	return db, cleanup
+func setupDbAndRouter(t *testing.T) (*mux.Router, func()) {
+	return commontest.SetupDbAndRouter(t, "auth.db", defineRoutes)
 }
 
 func TestRegisterLogin(t *testing.T) {
-	// Suppress log output by default
-	log.SetOutput(ioutil.Discard)
-
 	loginData := []struct {
 		name          string
 		input         string
@@ -62,11 +44,8 @@ func TestRegisterLogin(t *testing.T) {
 		},
 	}
 
-	db, cleanup := newDB(t)
+	router, cleanup := setupDbAndRouter(t)
 	defer cleanup()
-
-	router := mux.NewRouter()
-	defineRoutes(router, db)
 
 	realUser := func() io.Reader {
 		return strings.NewReader(`{"username": "foo", "password": "bar"}`)

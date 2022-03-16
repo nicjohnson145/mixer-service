@@ -1,42 +1,22 @@
 package drink
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/gorilla/mux"
 	"github.com/nicjohnson145/mixer-service/pkg/auth/authtest"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
-	"github.com/nicjohnson145/mixer-service/pkg/db"
+	"github.com/nicjohnson145/mixer-service/pkg/common/commontest"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 )
 
-func newDB(t *testing.T) (*sql.DB, func()) {
-	const name = "drink.db"
-	db, err := db.NewDB(name)
-	require.NoError(t, err)
-
-	cleanup := func() {
-		err := os.Remove(name)
-		if err != nil {
-			t.Log(err)
-			t.Fail()
-		}
-	}
-	return db, cleanup
-}
-
 func setupDbAndRouter(t *testing.T) (*mux.Router, func()) {
-	db, cleanup := newDB(t)
-	router := mux.NewRouter()
-	defineRoutes(router, db)
-	return router, cleanup
+	return commontest.SetupDbAndRouter(t, "drink.db", defineRoutes)
 }
 
 func t_createDrink(t *testing.T, router *mux.Router, r CreateDrinkRequest, o authtest.AuthOpts) (int, CreateDrinkResponse) {
