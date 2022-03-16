@@ -90,7 +90,7 @@ func login(db *sql.DB) common.HttpHandler {
 			return
 		}
 
-		refreshStr, err := GenerateAccessToken(TokenInputs{Username: payload.Username})
+		refreshStr, err := generateRefreshToken(TokenInputs{Username: payload.Username})
 		if err != nil {
 			writeInternalError(w, err, "generating refresh token")
 			return

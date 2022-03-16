@@ -23,6 +23,7 @@ func Init(r *mux.Router, db *sql.DB) error {
 func defineRoutes(r *mux.Router, db *sql.DB) {
 	r.HandleFunc(common.AuthV1+"/register-user", registerNewUser(db)).Methods(http.MethodPost)
 	r.HandleFunc(common.AuthV1+"/login", login(db)).Methods(http.MethodPost)
+	r.HandleFunc(common.AuthV1+"/refresh", requiresValidRefreshToken(refresh())).Methods(http.MethodPost)
 }
 
 func hashPassword(pw string) (string, error) {
