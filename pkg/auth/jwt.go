@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	log "github.com/sirupsen/logrus"
 	"net/http"
