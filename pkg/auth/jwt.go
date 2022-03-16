@@ -14,6 +14,8 @@ import (
 
 const (
 	AuthenticationHeader = "MixerAuth"
+	tokenTypeRefresh = "refresh-token"
+	tokenTypeAccess = "access-token"
 )
 
 var jwtSecret = getSecretKey()
@@ -23,7 +25,8 @@ var refreshTokenDuration = getRefreshTokenDuration()
 var ErrInvalidToken = errors.New("invalid token")
 
 type Claims struct {
-	Username string `json:"username"`
+	Username  string `json:"username"`
+	TokenType string `json:"token_type"`
 	jwt.StandardClaims
 }
 
@@ -63,16 +66,17 @@ func lookupDefaultedDuration(key string, defaultDuration time.Duration) time.Dur
 }
 
 func GenerateAccessToken(i TokenInputs) (string, error) {
-	return GenerateTokenStringWithExpiry(i, accessTokenDuration)
+	return generateTokenStringWithExpiry(i, tokenTypeAccess, accessTokenDuration)
 }
 
-func GenerateRefreshToken(i TokenInputs) (string, error) {
-	return GenerateTokenStringWithExpiry(i, refreshTokenDuration)
+func generateRefreshToken(i TokenInputs) (string, error) {
+	return generateTokenStringWithExpiry(i, tokenTypeRefresh, refreshTokenDuration)
 }
 
-func GenerateTokenStringWithExpiry(i TokenInputs, expiry time.Duration) (string, error) {
+func generateTokenStringWithExpiry(i TokenInputs, tokenType string, expiry time.Duration) (string, error) {
 	claims := &Claims{
 		Username: i.Username,
+		TokenType: tokenType,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(expiry).Unix(),
 		},
@@ -101,7 +105,33 @@ func validateToken(token string) (Claims, error) {
 	return claims, nil
 }
 
-func RequiresValidToken(handler ClaimsHttpHandler) common.HttpHandler {
+func validateRefreshToken(token string) (Claims, error) {
+	claims, err := validateToken(token)
+	if err != nil {
+		return Claims{}, err
+	}
+
+	if claims.TokenType != tokenTypeRefresh {
+		return Claims{}, fmt.Errorf("token is not refresh token")
+	}
+
+	return claims, nil
+}
+
+func validateAccessToken(token string) (Claims, error) {
+	claims, err := validateToken(token)
+	if err != nil {
+		return Claims{}, err
+	}
+
+	if claims.TokenType != tokenTypeAccess {
+		return Claims{}, fmt.Errorf("token is not access token")
+	}
+
+	return claims, nil
+}
+
+func requiresValidToken(handler ClaimsHttpHandler, validationFunc func(string) (Claims, error)) common.HttpHandler {
 
 	writeUnauthorized := func(w http.ResponseWriter) {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -118,7 +148,7 @@ func RequiresValidToken(handler ClaimsHttpHandler) common.HttpHandler {
 			return
 		}
 
-		claims, err := validateToken(val)
+		claims, err := validationFunc(val)
 		if err != nil {
 			writeUnauthorized(w)
 			return
@@ -127,3 +157,12 @@ func RequiresValidToken(handler ClaimsHttpHandler) common.HttpHandler {
 		handler(w, r, claims)
 	}
 }
+
+func RequiresValidAccessToken(handler ClaimsHttpHandler) common.HttpHandler {
+	return requiresValidToken(handler, validateAccessToken)
+}
+
+func requiresValidRefreshToken(handler ClaimsHttpHandler) common.HttpHandler {
+	return requiresValidToken(handler, validateRefreshToken)
+}
+
