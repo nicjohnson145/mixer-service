@@ -14,8 +14,8 @@ import (
 
 const (
 	AuthenticationHeader = "MixerAuth"
-	tokenTypeRefresh = "refresh-token"
-	tokenTypeAccess = "access-token"
+	tokenTypeRefresh     = "refresh-token"
+	tokenTypeAccess      = "access-token"
 )
 
 var jwtSecret = getSecretKey()
@@ -75,7 +75,7 @@ func generateRefreshToken(i TokenInputs) (string, error) {
 
 func generateTokenStringWithExpiry(i TokenInputs, tokenType string, expiry time.Duration) (string, error) {
 	claims := &Claims{
-		Username: i.Username,
+		Username:  i.Username,
 		TokenType: tokenType,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(expiry).Unix(),
@@ -165,4 +165,3 @@ func RequiresValidAccessToken(handler ClaimsHttpHandler) common.HttpHandler {
 func requiresValidRefreshToken(handler ClaimsHttpHandler) common.HttpHandler {
 	return requiresValidToken(handler, validateRefreshToken)
 }
-

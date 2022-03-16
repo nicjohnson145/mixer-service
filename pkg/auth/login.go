@@ -27,9 +27,9 @@ func login(db *sql.DB) common.HttpHandler {
 	writeLoginResponse := func(w http.ResponseWriter, status int, error string, token string, refreshToken string) {
 		w.WriteHeader(status)
 		bytes, _ := json.Marshal(LoginResponse{
-			Error:   error,
-			Success: status >= 200 && status <= 299,
-			AccessToken: token,
+			Error:        error,
+			Success:      status >= 200 && status <= 299,
+			AccessToken:  token,
 			RefreshToken: refreshToken,
 		})
 		fmt.Fprintln(w, string(bytes))
