@@ -17,6 +17,8 @@ const (
 )
 
 var jwtSecret = getSecretKey()
+var accessTokenDuration = getAccessTokenDuration()
+var refreshTokenDuration = getRefreshTokenDuration()
 
 var ErrInvalidToken = errors.New("invalid token")
 
@@ -38,11 +40,41 @@ func getSecretKey() []byte {
 	}
 }
 
-func GenerateTokenString(i TokenInputs) (string, error) {
+func getAccessTokenDuration() time.Duration {
+	return lookupDefaultedDuration("ACCESS_TOKEN_DURATION", time.Duration(5*time.Minute))
+}
+
+func getRefreshTokenDuration() time.Duration {
+	// Defaults to ~1 month
+	return lookupDefaultedDuration("REFRESH_TOKEN_DURATION", time.Duration(730*time.Hour))
+}
+
+func lookupDefaultedDuration(key string, defaultDuration time.Duration) time.Duration {
+	if val, ok := os.LookupEnv(key); ok {
+		d, err := time.ParseDuration(val)
+		if err != nil {
+			log.Fatal(fmt.Sprintf("error parsing %v: %v", key, err))
+		}
+		return d
+	} else {
+		log.Info(fmt.Sprintf("Using default %v of %v", key, defaultDuration))
+		return defaultDuration
+	}
+}
+
+func GenerateAccessToken(i TokenInputs) (string, error) {
+	return GenerateTokenStringWithExpiry(i, accessTokenDuration)
+}
+
+func GenerateRefreshToken(i TokenInputs) (string, error) {
+	return GenerateTokenStringWithExpiry(i, refreshTokenDuration)
+}
+
+func GenerateTokenStringWithExpiry(i TokenInputs, expiry time.Duration) (string, error) {
 	claims := &Claims{
 		Username: i.Username,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(5 * time.Minute).Unix(),
+			ExpiresAt: time.Now().Add(expiry).Unix(),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

@@ -21,7 +21,7 @@ func AuthenticatedRequest(t *testing.T, r *http.Request, opts AuthOpts) {
 		opts.Username = to.StringPtr(DefaultUsername)
 	}
 
-	token, err := auth.GenerateTokenString(auth.TokenInputs{
+	token, err := auth.GenerateAccessToken(auth.TokenInputs{
 		Username: *opts.Username,
 	})
 	require.NoError(t, err)

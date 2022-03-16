@@ -92,9 +92,11 @@ func TestRegisterLogin(t *testing.T) {
 			err = json.NewDecoder(rr.Result().Body).Decode(&resp)
 			require.NoError(t, err)
 			if tc.expectedToken {
-				require.NotEmpty(t, resp.Token)
+				require.NotEmpty(t, resp.AccessToken)
+				require.NotEmpty(t, resp.RefreshToken)
 			} else {
-				require.Empty(t, resp.Token)
+				require.Empty(t, resp.AccessToken)
+				require.Empty(t, resp.RefreshToken)
 			}
 		})
 	}
