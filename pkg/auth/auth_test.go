@@ -105,7 +105,7 @@ func TestRefresh(t *testing.T) {
 	defer cleanup()
 
 	protectedRoute := func(w http.ResponseWriter, req *http.Request, claims Claims) {
-		fmt.Fprintf(w, respText)
+		fmt.Fprint(w, respText)
 	}
 	router.HandleFunc("/some-protected-route", RequiresValidAccessToken(protectedRoute)).Methods(http.MethodGet)
 
