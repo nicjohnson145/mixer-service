@@ -4,8 +4,8 @@ go 1.16
 
 require (
 	github.com/Azure/go-autorest/autorest/to v0.4.0
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-playground/validator/v10 v10.10.1
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/mux v1.8.0
 	github.com/huandu/go-sqlbuilder v1.13.0
 	github.com/mattn/go-sqlite3 v1.14.12 // indirect
