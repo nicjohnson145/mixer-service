@@ -61,14 +61,14 @@ func t_getDrink(t *testing.T, router *mux.Router, id int64, o authtest.AuthOpts)
 	return rr.Result().StatusCode, resp
 }
 
-func t_updateDrink(t *testing.T, router *mux.Router, r UpdateDrinkRequest, o authtest.AuthOpts) (int, UpdateDrinkResponse) {
+func t_updateDrink(t *testing.T, router *mux.Router, id int64, r UpdateDrinkRequest, o authtest.AuthOpts) (int, UpdateDrinkResponse) {
 	bodyBytes, err := json.Marshal(r)
 	require.NoError(t, err)
 
 	rr := httptest.NewRecorder()
 	req, err := http.NewRequest(
 		http.MethodPut,
-		common.DrinksV1+fmt.Sprintf("/%v", r.ID),
+		common.DrinksV1+fmt.Sprintf("/%v", id),
 		strings.NewReader(string(bodyBytes)),
 	)
 	require.NoError(t, err)
@@ -173,11 +173,10 @@ func TestFullCRUDLoop(t *testing.T) {
 
 	// Update it
 	updateReq := UpdateDrinkRequest{
-		ID:        createResp.ID,
 		drinkData: updatedDrinkData,
 	}
 	// Updating as someone else should not work
-	status, _ = t_updateDrink(t, router, updateReq, authtest.AuthOpts{Username: to.StringPtr("user2")})
+	status, _ = t_updateDrink(t, router, createResp.ID, updateReq, authtest.AuthOpts{Username: to.StringPtr("user2")})
 	require.Equal(t, http.StatusNotFound, status)
 	// Should still be the same
 	status, getResp = t_getDrink(t, router, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
@@ -193,7 +192,7 @@ func TestFullCRUDLoop(t *testing.T) {
 	require.Equal(t, expectedGetResp, getResp)
 
 	// Update it as the original author should work
-	status, _ = t_updateDrink(t, router, updateReq, authtest.AuthOpts{Username: to.StringPtr("user1")})
+	status, _ = t_updateDrink(t, router, createResp.ID, updateReq, authtest.AuthOpts{Username: to.StringPtr("user1")})
 	require.Equal(t, http.StatusOK, status)
 	status, getResp = t_getDrink(t, router, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
 	require.Equal(t, http.StatusOK, status)

@@ -83,21 +83,14 @@ func createDrink(db *sql.DB) auth.ClaimsHttpHandler {
 			return
 		}
 
-		ingredients, err := toCSV(payload.Ingredients)
-		if err != nil {
-			writeBadRequest(w, err.Error(), "converting to DB model")
-			return
-		}
+		drink := Drink{}
+		setDrinkDataAttributes(&drink, payload)
+		drink.Username = claims.Username
 
-		model := Model{
-			Name:           payload.Name,
-			Username:       claims.Username,
-			PrimaryAlcohol: payload.PrimaryAlcohol,
-			PreferredGlass: payload.PreferredGlass,
-			Ingredients:    ingredients,
-			Instructions:   payload.Instructions,
-			Notes:          payload.Notes,
-			Publicity:      payload.Publicity,
+		model, err := toDb(drink)
+		if err != nil {
+			writeInternalError(w, err, "converting to DB model")
+			return
 		}
 
 		id, err := create(model, db)
