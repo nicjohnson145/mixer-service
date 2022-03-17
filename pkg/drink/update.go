@@ -14,7 +14,6 @@ import (
 )
 
 type UpdateDrinkRequest struct {
-	ID int64 `json:"id" validate:"required"`
 	drinkData
 }
 
@@ -87,19 +86,12 @@ func updateDrink(db *sql.DB) auth.ClaimsHttpHandler {
 			return
 		}
 
-		newModel, err := toDb(Drink{
-			ID:       payload.ID,
-			Username: claims.Username,
-			drinkData: drinkData{
-				Name:           payload.Name,
-				PrimaryAlcohol: payload.PrimaryAlcohol,
-				PreferredGlass: payload.PreferredGlass,
-				Ingredients:    payload.Ingredients,
-				Instructions:   payload.Instructions,
-				Notes:          payload.Notes,
-				Publicity:      payload.Publicity,
-			},
-		})
+		drink := Drink{}
+		setDrinkDataAttributes(&drink, payload)
+		drink.ID = id
+		drink.Username = claims.Username
+
+		newModel, err := toDb(drink)
 		if err != nil {
 			writeBadRequest(w, err.Error())
 		}
