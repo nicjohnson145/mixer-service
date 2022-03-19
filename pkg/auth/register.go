@@ -20,7 +20,7 @@ type RegisterNewUserResponse struct {
 	Success bool   `json:"success"`
 }
 
-func registerNewUser(db *sql.DB) common.HttpHandler {
+func registerNewUser(db *sql.DB) ClaimsHttpHandler {
 
 	writeRegisterNewUserReponse := func(w http.ResponseWriter, status int, msg string) {
 		w.WriteHeader(status)
@@ -47,7 +47,7 @@ func registerNewUser(db *sql.DB) common.HttpHandler {
 		writeRegisterNewUserReponse(w, http.StatusOK, "")
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request, claims Claims) {
 
 		var payload RegisterNewUserRequest
 		err := json.NewDecoder(r.Body).Decode(&payload)
