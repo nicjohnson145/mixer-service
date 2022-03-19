@@ -14,6 +14,7 @@ const (
 	ApiV1    = "/api/v1"
 	AuthV1   = ApiV1 + "/auth"
 	DrinksV1 = ApiV1 + "/drinks"
+	HealthV1 = ApiV1 + "/health"
 )
 
 func DefaultedEnvVar(key string, defaultVal string) string {
