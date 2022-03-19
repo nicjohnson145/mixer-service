@@ -18,17 +18,19 @@ type LoginRequest struct {
 type LoginResponse struct {
 	Error        string `json:"error,omitempty"`
 	Success      bool   `json:"success"`
+	Username     string `json:"username,omitempty"`
 	AccessToken  string `json:"access_token,omitempty"`
 	RefreshToken string `json:"refresh_token,omitempty"`
 }
 
 func login(db *sql.DB) common.HttpHandler {
 
-	writeLoginResponse := func(w http.ResponseWriter, status int, error string, token string, refreshToken string) {
+	writeLoginResponse := func(w http.ResponseWriter, status int, error string, username string, token string, refreshToken string) {
 		w.WriteHeader(status)
 		bytes, _ := json.Marshal(LoginResponse{
 			Error:        error,
 			Success:      status >= 200 && status <= 299,
+			Username:     username,
 			AccessToken:  token,
 			RefreshToken: refreshToken,
 		})
@@ -40,11 +42,11 @@ func login(db *sql.DB) common.HttpHandler {
 			"user":   user,
 			"reason": reason,
 		}).Info("invalid login attempt")
-		writeLoginResponse(w, http.StatusUnauthorized, "unauthorized", "", "")
+		writeLoginResponse(w, http.StatusUnauthorized, "unauthorized", user, "", "")
 	}
 
 	writeBadRequestError := func(w http.ResponseWriter, msg string) {
-		writeLoginResponse(w, http.StatusBadRequest, msg, "", "")
+		writeLoginResponse(w, http.StatusBadRequest, msg, "", "", "")
 	}
 
 	writeInternalError := func(w http.ResponseWriter, err error, location string) {
@@ -52,11 +54,11 @@ func login(db *sql.DB) common.HttpHandler {
 			"error":     err.Error(),
 			"operation": location,
 		}).Error("error during user login")
-		writeLoginResponse(w, http.StatusInternalServerError, "internal error", "", "")
+		writeLoginResponse(w, http.StatusInternalServerError, "internal error", "", "", "")
 	}
 
-	writeSucess := func(w http.ResponseWriter, accessToken string, refreshToken string) {
-		writeLoginResponse(w, http.StatusOK, "", accessToken, refreshToken)
+	writeSucess := func(w http.ResponseWriter, user string, accessToken string, refreshToken string) {
+		writeLoginResponse(w, http.StatusOK, "", user, accessToken, refreshToken)
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -96,6 +98,6 @@ func login(db *sql.DB) common.HttpHandler {
 			return
 		}
 
-		writeSucess(w, accessStr, refreshStr)
+		writeSucess(w, payload.Username, accessStr, refreshStr)
 	}
 }
