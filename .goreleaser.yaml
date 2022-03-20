@@ -4,15 +4,15 @@ before:
     - go mod tidy
 builds:
   - env:
-    - CGO_ENABLED=0
-  goos:
-    - linux
-    - windows
-    - darwin
-  goarch:
-    - amd64
-  main: ./cmd/mixer-server
-  binary: mixer-server
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+    main: ./cmd/mixer-server
+    binary: mixer-server
 archives:
   - format: binary
     name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}"
