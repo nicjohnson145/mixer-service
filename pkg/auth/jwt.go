@@ -1,13 +1,12 @@
 package auth
 
 import (
-	"encoding/json"
 	"errors"
+	"github.com/gofiber/fiber/v2"
 	"fmt"
 	"github.com/golang-jwt/jwt"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	log "github.com/sirupsen/logrus"
-	"net/http"
 	"os"
 	"time"
 )
@@ -131,37 +130,27 @@ func validateAccessToken(token string) (Claims, error) {
 	return claims, nil
 }
 
-func requiresValidToken(handler ClaimsHttpHandler, validationFunc func(string) (Claims, error)) common.HttpHandler {
+func requiresValidToken(handler FiberClaimsHandler, validationFunc func(string) (Claims, error)) common.FiberHandler {
 
-	writeUnauthorized := func(w http.ResponseWriter) {
-		w.WriteHeader(http.StatusUnauthorized)
-		bytes, _ := json.Marshal(map[string]string{
-			"message": "unauthorized",
-		})
-		fmt.Fprintln(w, string(bytes))
-	}
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		val := r.Header.Get(AuthenticationHeader)
-		if val == "" {
-			writeUnauthorized(w)
-			return
+	return func(c *fiber.Ctx) error {
+		val, ok := c.GetReqHeaders()[AuthenticationHeader]
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "unauthorized"})
 		}
 
 		claims, err := validationFunc(val)
 		if err != nil {
-			writeUnauthorized(w)
-			return
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "unauthorized"})
 		}
 
-		handler(w, r, claims)
+		return handler(c, claims)
 	}
 }
 
-func RequiresValidAccessToken(handler ClaimsHttpHandler) common.HttpHandler {
+func RequiresValidAccessToken(handler FiberClaimsHandler) common.FiberHandler {
 	return requiresValidToken(handler, validateAccessToken)
 }
 
-func requiresValidRefreshToken(handler ClaimsHttpHandler) common.HttpHandler {
+func requiresValidRefreshToken(handler FiberClaimsHandler) common.FiberHandler {
 	return requiresValidToken(handler, validateRefreshToken)
 }

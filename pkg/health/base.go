@@ -2,22 +2,19 @@ package health
 
 import (
 	"database/sql"
-	"github.com/gorilla/mux"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
-	"net/http"
-	"fmt"
+	"github.com/gofiber/fiber/v2"
 )
 
-func Init(r *mux.Router, db *sql.DB) error {
-	defineRoutes(r, db)
+func Init(app *fiber.App, db *sql.DB) error {
+	defineRoutes(app, db)
 	return nil
 }
 
-func defineRoutes(r *mux.Router, db *sql.DB) {
-	r.HandleFunc(common.HealthV1, healthCheck)
+func defineRoutes(app *fiber.App, db *sql.DB) {
+	app.Get(common.HealthV1, healthCheck)
 }
 
-func healthCheck(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, "ok")
+func healthCheck(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).SendString("ok")
 }

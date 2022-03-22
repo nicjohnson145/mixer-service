@@ -2,13 +2,11 @@ package drink
 
 import (
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
-	log "github.com/sirupsen/logrus"
-	"net/http"
+	"github.com/gofiber/fiber/v2"
 )
 
 type CreateDrinkRequest struct {
@@ -21,66 +19,32 @@ type CreateDrinkResponse struct {
 	ID      int64  `json:"id,omitempty"`
 }
 
-func createDrink(db *sql.DB) auth.ClaimsHttpHandler {
-
-	writeResponse := func(w http.ResponseWriter, msg string, status int, id int64) {
-		w.WriteHeader(status)
-		bytes, _ := json.Marshal(CreateDrinkResponse{
-			Error:   msg,
-			Success: status >= 200 && status <= 299,
-			ID:      id,
-		})
-		fmt.Fprintln(w, string(bytes))
-	}
-
-	writeBadRequest := func(w http.ResponseWriter, msg string, location string) {
-		log.WithFields(log.Fields{
-			"error":     msg,
-			"operation": location,
-		}).Error("bad create drink request")
-		writeResponse(w, msg, http.StatusBadRequest, 0)
-	}
-
-	writeInternalError := func(w http.ResponseWriter, err error, location string) {
-		log.WithFields(log.Fields{
-			"error":     err.Error(),
-			"operation": location,
-		}).Error("internal error during drink creation")
-		writeResponse(w, err.Error(), http.StatusInternalServerError, 0)
-	}
-
-	writeSucess := func(w http.ResponseWriter, id int64) {
-		writeResponse(w, "success", http.StatusOK, id)
-	}
-
-	return func(w http.ResponseWriter, r *http.Request, claims auth.Claims) {
+func createDrink(db *sql.DB) auth.FiberClaimsHandler {
+	
+	return func(c *fiber.Ctx, claims auth.Claims) error {
 		var payload CreateDrinkRequest
-		defer r.Body.Close()
-		err := json.NewDecoder(r.Body).Decode(&payload)
-		if err != nil {
-			writeBadRequest(w, err.Error(), "decoding payload")
-			return
+		if err := c.BodyParser(&payload); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(CreateDrinkResponse{
+				Success: false,
+			})
 		}
-
-		err = validate.Struct(payload)
-		if err != nil {
-			writeBadRequest(w, err.Error(), "checking required fields")
-			return
+		if err := validate.Struct(payload); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(CreateDrinkResponse{
+				Error: err.Error(),
+				Success: false,
+			})
 		}
 
 		existingDrink, err := getByNameAndUsername(payload.Name, claims.Username, db)
 		if err != nil && !errors.Is(err, common.ErrNotFound) {
-			writeInternalError(w, err, "getting existing drink")
-			return
+			return err
 		}
 
 		if existingDrink != nil {
-			writeBadRequest(
-				w,
-				fmt.Sprintf("user %v already has a drink named %v", claims.Username, payload.Name),
-				"getting existing drink",
-			)
-			return
+			return c.Status(fiber.StatusBadRequest).JSON(CreateDrinkResponse{
+				Error: fmt.Sprintf("user %v already has a drink named %v", claims.Username, payload.Name),
+				Success: false,
+			})
 		}
 
 		drink := Drink{}
@@ -89,16 +53,17 @@ func createDrink(db *sql.DB) auth.ClaimsHttpHandler {
 
 		model, err := toDb(drink)
 		if err != nil {
-			writeInternalError(w, err, "converting to DB model")
-			return
+			return err
 		}
 
 		id, err := create(model, db)
 		if err != nil {
-			writeInternalError(w, err, "inserting into db")
-			return
+			return err
 		}
 
-		writeSucess(w, id)
+		return c.JSON(CreateDrinkResponse{
+			Success: true,
+			ID: id,
+		})
 	}
 }

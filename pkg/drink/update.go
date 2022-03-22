@@ -2,15 +2,11 @@ package drink
 
 import (
 	"database/sql"
-	"encoding/json"
 	"errors"
-	"fmt"
-	"github.com/gorilla/mux"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
-	log "github.com/sirupsen/logrus"
-	"net/http"
 	"strconv"
+	"github.com/gofiber/fiber/v2"
 )
 
 type UpdateDrinkRequest struct {
@@ -22,68 +18,42 @@ type UpdateDrinkResponse struct {
 	Success bool   `json:"success"`
 }
 
-func updateDrink(db *sql.DB) auth.ClaimsHttpHandler {
-	writeResponse := func(w http.ResponseWriter, status int, err string) {
-		w.WriteHeader(status)
-		bytes, _ := json.Marshal(UpdateDrinkResponse{
-			Error:   err,
-			Success: status >= 200 && status <= 299,
-		})
-		fmt.Fprintln(w, string(bytes))
-	}
-
-	writeBadRequest := func(w http.ResponseWriter, msg string) {
-		writeResponse(w, http.StatusBadRequest, msg)
-	}
-
-	writeNotFound := func(w http.ResponseWriter) {
-		writeResponse(w, http.StatusNotFound, "not found")
-	}
-
-	writeInternalError := func(w http.ResponseWriter, err error, id int64, operation string) {
-		log.WithFields(log.Fields{
-			"error":     err.Error(),
-			"operation": operation,
-			"id":        id,
-		}).Error("internal error while updating drink")
-		writeResponse(w, http.StatusInternalServerError, "internal error")
-	}
-
-	writeSucces := func(w http.ResponseWriter) {
-		writeResponse(w, http.StatusOK, "")
-	}
-
-	return func(w http.ResponseWriter, r *http.Request, claims auth.Claims) {
-		vars := mux.Vars(r)
-		id, _ := strconv.ParseInt(vars["id"], 10, 64)
-
+func updateDrink(db *sql.DB) auth.FiberClaimsHandler {
+	return func(c *fiber.Ctx, claims auth.Claims) error {
+		id, err := strconv.ParseInt(c.Params("id"), 10, 64)
+		if err != nil {
+			return err
+		}
 		model, err := getByID(id, db)
 		if err != nil {
 			if errors.Is(err, common.ErrNotFound) {
-				writeNotFound(w)
-				return
+				return c.Status(fiber.StatusNotFound).JSON(UpdateDrinkResponse{
+					Success: false,
+				})
 			} else {
-				writeInternalError(w, err, id, "fetching by id")
-				return
+				return err
 			}
 		}
 		if model.Username != claims.Username {
-			writeNotFound(w)
-			return
+			return c.Status(fiber.StatusNotFound).JSON(UpdateDrinkResponse{
+				Success: false,
+			})
 		}
 
 		var payload UpdateDrinkRequest
-		defer r.Body.Close()
-		err = json.NewDecoder(r.Body).Decode(&payload)
-		if err != nil {
-			writeBadRequest(w, err.Error())
-			return
+		if err := c.BodyParser(&payload); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(UpdateDrinkResponse{
+				Error: err.Error(),
+				Success: false,
+			})
 		}
 
 		err = validate.Struct(payload)
 		if err != nil {
-			writeBadRequest(w, err.Error())
-			return
+			return c.Status(fiber.StatusBadRequest).JSON(UpdateDrinkResponse{
+				Error: err.Error(),
+				Success: false,
+			})
 		}
 
 		drink := Drink{}
@@ -93,15 +63,15 @@ func updateDrink(db *sql.DB) auth.ClaimsHttpHandler {
 
 		newModel, err := toDb(drink)
 		if err != nil {
-			writeBadRequest(w, err.Error())
+			return err
 		}
-
 		err = updateModel(newModel, db)
 		if err != nil {
-			writeInternalError(w, err, id, "updating drink")
-			return
+			return err
 		}
 
-		writeSucces(w)
+		return c.JSON(UpdateDrinkResponse{
+			Success: true,
+		})
 	}
 }

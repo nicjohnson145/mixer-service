@@ -2,10 +2,10 @@ package auth
 
 import (
 	"database/sql"
-	"github.com/gorilla/mux"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
+	"github.com/gofiber/fiber/v2"
 )
 
 type User struct {
@@ -14,20 +14,21 @@ type User struct {
 }
 
 type ClaimsHttpHandler func(http.ResponseWriter, *http.Request, Claims)
+type FiberClaimsHandler func(*fiber.Ctx, Claims) error
 
-func Init(r *mux.Router, db *sql.DB) error {
-	defineRoutes(r, db)
+func Init(app *fiber.App, db *sql.DB) error {
+	defineRoutes(app, db)
 	return nil
 }
 
-func defineRoutes(r *mux.Router, db *sql.DB) {
+func defineRoutes(app *fiber.App, db *sql.DB) {
 	if common.DefaultedEnvVar("PROTECT_REGISTER_ENDPOINT", "false") == "true" {
-		r.HandleFunc(common.AuthV1+"/register-user", RequiresValidAccessToken(registerNewUser(db))).Methods(http.MethodPost)
+		app.Post(common.AuthV1 + "/register-user", RequiresValidAccessToken(registerNewUser(db)))
 	} else {
-		r.HandleFunc(common.AuthV1+"/register-user", noopProtection(registerNewUser(db))).Methods(http.MethodPost)
+		app.Post(common.AuthV1 + "/register-user", noopProtection(registerNewUser(db)))
 	}
-	r.HandleFunc(common.AuthV1+"/login", login(db)).Methods(http.MethodPost)
-	r.HandleFunc(common.AuthV1+"/refresh", requiresValidRefreshToken(refresh())).Methods(http.MethodPost)
+	app.Post(common.AuthV1+"/login", login(db))
+	app.Post(common.AuthV1+"/refresh", requiresValidRefreshToken(refresh()))
 }
 
 func hashPassword(pw string) (string, error) {
@@ -44,8 +45,8 @@ func comparePasswords(hashedPw string, plainPw string) bool {
 	return err == nil
 }
 
-func noopProtection(handler ClaimsHttpHandler) common.HttpHandler {
-	return func(w http.ResponseWriter, r *http.Request) {
-		handler(w, r, Claims{})
+func noopProtection(handler FiberClaimsHandler) common.FiberHandler {
+	return func(c *fiber.Ctx) error {
+		return handler(c, Claims{})
 	}
 }

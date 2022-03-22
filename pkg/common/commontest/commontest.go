@@ -2,7 +2,7 @@ package commontest
 
 import (
 	"database/sql"
-	"github.com/gorilla/mux"
+	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/db"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -23,9 +23,9 @@ func newDB(t *testing.T, name string) (*sql.DB, func()) {
 	return db, cleanup
 }
 
-func SetupDbAndRouter(t *testing.T, name string, routeFunc func(*mux.Router, *sql.DB)) (*mux.Router, func()) {
+func SetupDbAndRouter(t *testing.T, name string, routeFunc func(*fiber.App, *sql.DB)) (*fiber.App, func()) {
 	db, cleanup := newDB(t, name)
-	router := mux.NewRouter()
-	routeFunc(router, db)
-	return router, cleanup
+	app := fiber.New()
+	routeFunc(app, db)
+	return app, cleanup
 }
