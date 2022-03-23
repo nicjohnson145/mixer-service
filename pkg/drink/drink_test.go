@@ -4,26 +4,24 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/gorilla/mux"
 	"github.com/nicjohnson145/mixer-service/pkg/auth/authtest"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"github.com/nicjohnson145/mixer-service/pkg/common/commontest"
 	"github.com/stretchr/testify/require"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
+	"github.com/gofiber/fiber/v2"
 )
 
-func setupDbAndRouter(t *testing.T) (*mux.Router, func()) {
+func setupDbAndApp(t *testing.T) (*fiber.App, func()) {
 	return commontest.SetupDbAndRouter(t, "drink.db", defineRoutes)
 }
 
-func t_createDrink(t *testing.T, router *mux.Router, r CreateDrinkRequest, o authtest.AuthOpts) (int, CreateDrinkResponse) {
+func t_createDrink(t *testing.T, app *fiber.App, r CreateDrinkRequest, o authtest.AuthOpts) (int, CreateDrinkResponse) {
 	bodyBytes, err := json.Marshal(r)
 	require.NoError(t, err)
 
-	rr := httptest.NewRecorder()
 	req, err := http.NewRequest(
 		http.MethodPost,
 		common.DrinksV1+"/create",
@@ -31,19 +29,19 @@ func t_createDrink(t *testing.T, router *mux.Router, r CreateDrinkRequest, o aut
 	)
 	require.NoError(t, err)
 	authtest.AuthenticatedRequest(t, req, o)
+	commontest.SetJsonHeader(req)
 
-	router.ServeHTTP(rr, req)
+	resp, err := app.Test(req)
+	defer resp.Body.Close()
 
-	defer rr.Result().Body.Close()
-	var resp CreateDrinkResponse
-	err = json.NewDecoder(rr.Result().Body).Decode(&resp)
+	var rp CreateDrinkResponse
+	err = json.NewDecoder(resp.Body).Decode(&rp)
 	require.NoError(t, err)
 
-	return rr.Result().StatusCode, resp
+	return resp.StatusCode, rp
 }
 
-func t_getDrink(t *testing.T, router *mux.Router, id int64, o authtest.AuthOpts) (int, GetDrinkResponse) {
-	rr := httptest.NewRecorder()
+func t_getDrink(t *testing.T, app *fiber.App, id int64, o authtest.AuthOpts) (int, GetDrinkResponse) {
 	req, err := http.NewRequest(
 		http.MethodGet,
 		common.DrinksV1+fmt.Sprintf("/%v", id),
@@ -51,21 +49,22 @@ func t_getDrink(t *testing.T, router *mux.Router, id int64, o authtest.AuthOpts)
 	)
 	require.NoError(t, err)
 	authtest.AuthenticatedRequest(t, req, o)
-	router.ServeHTTP(rr, req)
+	commontest.SetJsonHeader(req)
 
-	defer rr.Result().Body.Close()
-	var resp GetDrinkResponse
-	err = json.NewDecoder(rr.Result().Body).Decode(&resp)
+	resp, err := app.Test(req)
+	defer resp.Body.Close()
+
+	var rp GetDrinkResponse
+	err = json.NewDecoder(resp.Body).Decode(&rp)
 	require.NoError(t, err)
 
-	return rr.Result().StatusCode, resp
+	return resp.StatusCode, rp
 }
 
-func t_updateDrink(t *testing.T, router *mux.Router, id int64, r UpdateDrinkRequest, o authtest.AuthOpts) (int, UpdateDrinkResponse) {
+func t_updateDrink(t *testing.T, app *fiber.App, id int64, r UpdateDrinkRequest, o authtest.AuthOpts) (int, UpdateDrinkResponse) {
 	bodyBytes, err := json.Marshal(r)
 	require.NoError(t, err)
 
-	rr := httptest.NewRecorder()
 	req, err := http.NewRequest(
 		http.MethodPut,
 		common.DrinksV1+fmt.Sprintf("/%v", id),
@@ -73,18 +72,19 @@ func t_updateDrink(t *testing.T, router *mux.Router, id int64, r UpdateDrinkRequ
 	)
 	require.NoError(t, err)
 	authtest.AuthenticatedRequest(t, req, o)
-	router.ServeHTTP(rr, req)
+	commontest.SetJsonHeader(req)
 
-	defer rr.Result().Body.Close()
-	var resp UpdateDrinkResponse
-	err = json.NewDecoder(rr.Result().Body).Decode(&resp)
+	resp, err := app.Test(req)
+	defer resp.Body.Close()
+
+	var rp UpdateDrinkResponse
+	err = json.NewDecoder(resp.Body).Decode(&rp)
 	require.NoError(t, err)
 
-	return rr.Result().StatusCode, resp
+	return resp.StatusCode, rp
 }
 
-func t_deleteDrink(t *testing.T, router *mux.Router, id int64, o authtest.AuthOpts) (int, DeleteDrinkResponse) {
-	rr := httptest.NewRecorder()
+func t_deleteDrink(t *testing.T, app *fiber.App, id int64, o authtest.AuthOpts) (int, DeleteDrinkResponse) {
 	req, err := http.NewRequest(
 		http.MethodDelete,
 		common.DrinksV1+fmt.Sprintf("/%v", id),
@@ -92,18 +92,19 @@ func t_deleteDrink(t *testing.T, router *mux.Router, id int64, o authtest.AuthOp
 	)
 	require.NoError(t, err)
 	authtest.AuthenticatedRequest(t, req, o)
-	router.ServeHTTP(rr, req)
+	commontest.SetJsonHeader(req)
 
-	defer rr.Result().Body.Close()
-	var resp DeleteDrinkResponse
-	err = json.NewDecoder(rr.Result().Body).Decode(&resp)
+	resp, err := app.Test(req)
+	defer resp.Body.Close()
+
+	var rp DeleteDrinkResponse
+	err = json.NewDecoder(resp.Body).Decode(&rp)
 	require.NoError(t, err)
 
-	return rr.Result().StatusCode, resp
+	return resp.StatusCode, rp
 }
 
-func t_getDrinksByUser(t *testing.T, router *mux.Router, user string, o authtest.AuthOpts) (int, GetDrinksByUserResponse) {
-	rr := httptest.NewRecorder()
+func t_getDrinksByUser(t *testing.T, app *fiber.App, user string, o authtest.AuthOpts) (int, GetDrinksByUserResponse) {
 	req, err := http.NewRequest(
 		http.MethodGet,
 		common.DrinksV1+"/by-user/"+user,
@@ -111,18 +112,20 @@ func t_getDrinksByUser(t *testing.T, router *mux.Router, user string, o authtest
 	)
 	require.NoError(t, err)
 	authtest.AuthenticatedRequest(t, req, o)
-	router.ServeHTTP(rr, req)
+	commontest.SetJsonHeader(req)
 
-	defer rr.Result().Body.Close()
-	var resp GetDrinksByUserResponse
-	err = json.NewDecoder(rr.Result().Body).Decode(&resp)
+	resp, err := app.Test(req)
+	defer resp.Body.Close()
+
+	var rp GetDrinksByUserResponse
+	err = json.NewDecoder(resp.Body).Decode(&rp)
 	require.NoError(t, err)
 
-	return rr.Result().StatusCode, resp
+	return resp.StatusCode, rp
 }
 
 func TestFullCRUDLoop(t *testing.T) {
-	router, cleanup := setupDbAndRouter(t)
+	app, cleanup := setupDbAndApp(t)
 	defer cleanup()
 
 	origDrinkData := drinkData{
@@ -151,11 +154,11 @@ func TestFullCRUDLoop(t *testing.T) {
 	body := CreateDrinkRequest{drinkData: origDrinkData}
 
 	// Creating a drink
-	status, createResp := t_createDrink(t, router, body, authtest.AuthOpts{Username: to.StringPtr("user1")})
+	status, createResp := t_createDrink(t, app, body, authtest.AuthOpts{Username: to.StringPtr("user1")})
 	require.Equal(t, http.StatusOK, status)
 
 	// Fetch it as the orignal author
-	status, getResp := t_getDrink(t, router, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
+	status, getResp := t_getDrink(t, app, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
 	require.Equal(t, http.StatusOK, status)
 	expectedGetResp := GetDrinkResponse{
 		Success: true,
@@ -168,7 +171,7 @@ func TestFullCRUDLoop(t *testing.T) {
 	require.Equal(t, expectedGetResp, getResp)
 
 	// Fetch it as someone else should fail
-	status, _ = t_getDrink(t, router, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user2")})
+	status, _ = t_getDrink(t, app, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user2")})
 	require.Equal(t, http.StatusNotFound, status)
 
 	// Update it
@@ -176,10 +179,10 @@ func TestFullCRUDLoop(t *testing.T) {
 		drinkData: updatedDrinkData,
 	}
 	// Updating as someone else should not work
-	status, _ = t_updateDrink(t, router, createResp.ID, updateReq, authtest.AuthOpts{Username: to.StringPtr("user2")})
+	status, _ = t_updateDrink(t, app, createResp.ID, updateReq, authtest.AuthOpts{Username: to.StringPtr("user2")})
 	require.Equal(t, http.StatusNotFound, status)
 	// Should still be the same
-	status, getResp = t_getDrink(t, router, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
+	status, getResp = t_getDrink(t, app, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
 	require.Equal(t, http.StatusOK, status)
 	expectedGetResp = GetDrinkResponse{
 		Success: true,
@@ -192,9 +195,9 @@ func TestFullCRUDLoop(t *testing.T) {
 	require.Equal(t, expectedGetResp, getResp)
 
 	// Update it as the original author should work
-	status, _ = t_updateDrink(t, router, createResp.ID, updateReq, authtest.AuthOpts{Username: to.StringPtr("user1")})
+	status, _ = t_updateDrink(t, app, createResp.ID, updateReq, authtest.AuthOpts{Username: to.StringPtr("user1")})
 	require.Equal(t, http.StatusOK, status)
-	status, getResp = t_getDrink(t, router, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
+	status, getResp = t_getDrink(t, app, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
 	require.Equal(t, http.StatusOK, status)
 	expectedGetResp = GetDrinkResponse{
 		Success: true,
@@ -207,9 +210,9 @@ func TestFullCRUDLoop(t *testing.T) {
 	require.Equal(t, expectedGetResp, getResp)
 
 	// Deleting it as someone else should not be possible
-	status, _ = t_deleteDrink(t, router, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user2")})
+	status, _ = t_deleteDrink(t, app, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user2")})
 	require.Equal(t, http.StatusNotFound, status)
-	status, getResp = t_getDrink(t, router, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
+	status, getResp = t_getDrink(t, app, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
 	require.Equal(t, http.StatusOK, status)
 	expectedGetResp = GetDrinkResponse{
 		Success: true,
@@ -222,14 +225,14 @@ func TestFullCRUDLoop(t *testing.T) {
 	require.Equal(t, expectedGetResp, getResp)
 
 	// But deleting it as the orignal author should work
-	status, _ = t_deleteDrink(t, router, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
+	status, _ = t_deleteDrink(t, app, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
 	require.Equal(t, http.StatusOK, status)
-	status, _ = t_getDrink(t, router, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
+	status, _ = t_getDrink(t, app, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user1")})
 	require.Equal(t, http.StatusNotFound, status)
 }
 
 func TestPublicDrinksFetchableByAnyone(t *testing.T) {
-	router, cleanup := setupDbAndRouter(t)
+	app, cleanup := setupDbAndApp(t)
 	defer cleanup()
 
 	drinkData := drinkData{
@@ -247,11 +250,11 @@ func TestPublicDrinksFetchableByAnyone(t *testing.T) {
 	body := CreateDrinkRequest{drinkData: drinkData}
 
 	// Creating a drink
-	status, createResp := t_createDrink(t, router, body, authtest.AuthOpts{Username: to.StringPtr("user1")})
+	status, createResp := t_createDrink(t, app, body, authtest.AuthOpts{Username: to.StringPtr("user1")})
 	require.Equal(t, http.StatusOK, status)
 
 	// Fetch it as someone else, it should succeed since it's public
-	status, getResp := t_getDrink(t, router, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user2")})
+	status, getResp := t_getDrink(t, app, createResp.ID, authtest.AuthOpts{Username: to.StringPtr("user2")})
 	require.Equal(t, http.StatusOK, status)
 	expectedGetResp := GetDrinkResponse{
 		Success: true,
@@ -265,7 +268,7 @@ func TestPublicDrinksFetchableByAnyone(t *testing.T) {
 }
 
 func TestGetDrinksByUser(t *testing.T) {
-	router, cleanup := setupDbAndRouter(t)
+	app, cleanup := setupDbAndApp(t)
 	defer cleanup()
 
 	first := drinkData{
@@ -302,12 +305,12 @@ func TestGetDrinksByUser(t *testing.T) {
 
 	drinks := []drinkData{first, second, third}
 	for _, d := range drinks {
-		status, _ := t_createDrink(t, router, CreateDrinkRequest{drinkData: d}, authtest.AuthOpts{Username: to.StringPtr("user1")})
+		status, _ := t_createDrink(t, app, CreateDrinkRequest{drinkData: d}, authtest.AuthOpts{Username: to.StringPtr("user1")})
 		require.Equal(t, http.StatusOK, status)
 	}
 
 	// Fetching as user1 should result in all drinks
-	status, getResp := t_getDrinksByUser(t, router, "user1", authtest.AuthOpts{Username: to.StringPtr("user1")})
+	status, getResp := t_getDrinksByUser(t, app, "user1", authtest.AuthOpts{Username: to.StringPtr("user1")})
 	require.Equal(t, http.StatusOK, status)
 	expectedGetResp := GetDrinksByUserResponse{
 		Success: true,
@@ -332,7 +335,7 @@ func TestGetDrinksByUser(t *testing.T) {
 	require.Equal(t, expectedGetResp, getResp)
 
 	// Fetching as user2 should only return the public drinks
-	status, getResp = t_getDrinksByUser(t, router, "user1", authtest.AuthOpts{Username: to.StringPtr("user2")})
+	status, getResp = t_getDrinksByUser(t, app, "user1", authtest.AuthOpts{Username: to.StringPtr("user2")})
 	require.Equal(t, http.StatusOK, status)
 	expectedGetResp = GetDrinksByUserResponse{
 		Success: true,

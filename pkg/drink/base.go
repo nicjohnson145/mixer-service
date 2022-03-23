@@ -28,9 +28,9 @@ func Init(app *fiber.App, db *sql.DB) error {
 
 func defineRoutes(app *fiber.App, db *sql.DB) {
 	app.Post(common.DrinksV1+"/create", auth.RequiresValidAccessToken(createDrink(db)))
-	app.Get(common.DrinksV1+"/{id:[0-9]+}", auth.RequiresValidAccessToken(getDrink(db)))
-	app.Delete(common.DrinksV1+"/{id:[0-9]+}", auth.RequiresValidAccessToken(deleteDrink(db)))
-	app.Put(common.DrinksV1+"/{id:[0-9]+}", auth.RequiresValidAccessToken(updateDrink(db)))
-	app.Get(common.DrinksV1+"/by-user/{username}", auth.RequiresValidAccessToken(getDrinksByUser(db)))
+	app.Get(common.DrinksV1+"/:id", auth.RequiresValidAccessToken(getDrink(db)))
+	app.Delete(common.DrinksV1+"/:id", auth.RequiresValidAccessToken(deleteDrink(db)))
+	app.Put(common.DrinksV1+"/:id", auth.RequiresValidAccessToken(updateDrink(db)))
+	app.Get(common.DrinksV1+"/by-user/:username", auth.RequiresValidAccessToken(getDrinksByUser(db)))
 }
 
