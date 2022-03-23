@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
+	"github.com/nicjohnson145/mixer-service/pkg/drink"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"github.com/nicjohnson145/mixer-service/pkg/db"
 	"github.com/nicjohnson145/mixer-service/pkg/health"
@@ -22,9 +23,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//if err := drink.Init(r, db); err != nil {
-	//    log.Fatal(err)
-	//}
+	if err := drink.Init(app, db); err != nil {
+		log.Fatal(err)
+	}
 
 	if err := health.Init(app, db); err != nil {
 		log.Fatal(err)
