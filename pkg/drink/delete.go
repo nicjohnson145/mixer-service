@@ -2,14 +2,10 @@ package drink
 
 import (
 	"database/sql"
-	"encoding/json"
 	"errors"
-	"fmt"
-	"github.com/gorilla/mux"
+	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
-	log "github.com/sirupsen/logrus"
-	"net/http"
 	"strconv"
 )
 
@@ -18,58 +14,36 @@ type DeleteDrinkResponse struct {
 	Success bool   `json:"success"`
 }
 
-func deleteDrink(db *sql.DB) auth.ClaimsHttpHandler {
-	writeResponse := func(w http.ResponseWriter, status int, err string) {
-		w.WriteHeader(status)
-		bytes, _ := json.Marshal(DeleteDrinkResponse{
-			Error:   err,
-			Success: status >= 200 && status <= 299,
-		})
-		fmt.Fprintln(w, string(bytes))
-	}
+func deleteDrink(db *sql.DB) auth.FiberClaimsHandler {
 
-	writeNotFound := func(w http.ResponseWriter) {
-		writeResponse(w, http.StatusNotFound, "not found")
-	}
-
-	writeInternalError := func(w http.ResponseWriter, err error, id int64, operation string) {
-		log.WithFields(log.Fields{
-			"error":     err.Error(),
-			"operation": operation,
-			"id":        id,
-		}).Error("internal error while deleting drink")
-		writeResponse(w, http.StatusInternalServerError, "internal error")
-	}
-
-	writeSucces := func(w http.ResponseWriter) {
-		writeResponse(w, http.StatusOK, "")
-	}
-
-	return func(w http.ResponseWriter, r *http.Request, claims auth.Claims) {
-		vars := mux.Vars(r)
-		id, _ := strconv.ParseInt(vars["id"], 10, 64)
-
+	return func(c *fiber.Ctx, claims auth.Claims) error {
+		id, err := strconv.ParseInt(c.Params("id"), 10, 64)
+		if err != nil {
+			return err
+		}
 		model, err := getByID(id, db)
 		if err != nil {
 			if errors.Is(err, common.ErrNotFound) {
-				writeNotFound(w)
-				return
+				return c.Status(fiber.StatusNotFound).JSON(DeleteDrinkResponse{
+					Success: false,
+				})
 			} else {
-				writeInternalError(w, err, id, "fetching by id")
-				return
+				return err
 			}
 		}
 		if model.Username != claims.Username {
-			writeNotFound(w)
-			return
+			return c.Status(fiber.StatusNotFound).JSON(DeleteDrinkResponse{
+				Success: false,
+			})
 		}
 
 		err = deleteModel(id, db)
 		if err != nil {
-			writeInternalError(w, err, id, "deleting drink")
-			return
+			return err
 		}
 
-		writeSucces(w)
+		return c.JSON(DeleteDrinkResponse{
+			Success: true,
+		})
 	}
 }

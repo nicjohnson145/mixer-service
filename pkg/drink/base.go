@@ -3,10 +3,9 @@ package drink
 import (
 	"database/sql"
 	"github.com/go-playground/validator/v10"
-	"github.com/gorilla/mux"
+	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
-	"net/http"
 )
 
 const (
@@ -22,16 +21,15 @@ type Drink struct {
 
 var validate = validator.New()
 
-func Init(r *mux.Router, db *sql.DB) error {
-	defineRoutes(r, db)
+func Init(app *fiber.App, db *sql.DB) error {
+	defineRoutes(app, db)
 	return nil
 }
 
-func defineRoutes(r *mux.Router, db *sql.DB) {
-	r.HandleFunc(common.DrinksV1+"/create", auth.RequiresValidAccessToken(createDrink(db))).Methods(http.MethodPost)
-	r.HandleFunc(common.DrinksV1+"/{id:[0-9]+}", auth.RequiresValidAccessToken(getDrink(db))).Methods(http.MethodGet)
-	r.HandleFunc(common.DrinksV1+"/{id:[0-9]+}", auth.RequiresValidAccessToken(deleteDrink(db))).Methods(http.MethodDelete)
-	r.HandleFunc(common.DrinksV1+"/{id:[0-9]+}", auth.RequiresValidAccessToken(updateDrink(db))).Methods(http.MethodPut)
-	r.HandleFunc(common.DrinksV1+"/by-user/{username}", auth.RequiresValidAccessToken(getDrinksByUser(db))).Methods(http.MethodGet)
+func defineRoutes(app *fiber.App, db *sql.DB) {
+	app.Post(common.DrinksV1+"/create", auth.RequiresValidAccessToken(createDrink(db)))
+	app.Get(common.DrinksV1+"/:id", auth.RequiresValidAccessToken(getDrink(db)))
+	app.Delete(common.DrinksV1+"/:id", auth.RequiresValidAccessToken(deleteDrink(db)))
+	app.Put(common.DrinksV1+"/:id", auth.RequiresValidAccessToken(updateDrink(db)))
+	app.Get(common.DrinksV1+"/by-user/:username", auth.RequiresValidAccessToken(getDrinksByUser(db)))
 }
-

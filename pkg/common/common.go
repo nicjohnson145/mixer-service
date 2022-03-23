@@ -2,6 +2,7 @@ package common
 
 import (
 	"errors"
+	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"os"
 )
@@ -9,6 +10,7 @@ import (
 var ErrNotFound = errors.New("not found")
 
 type HttpHandler func(http.ResponseWriter, *http.Request)
+type FiberHandler func(*fiber.Ctx) error
 
 const (
 	ApiV1    = "/api/v1"
