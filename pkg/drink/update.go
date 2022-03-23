@@ -3,10 +3,10 @@ package drink
 import (
 	"database/sql"
 	"errors"
+	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"strconv"
-	"github.com/gofiber/fiber/v2"
 )
 
 type UpdateDrinkRequest struct {
@@ -43,7 +43,7 @@ func updateDrink(db *sql.DB) auth.FiberClaimsHandler {
 		var payload UpdateDrinkRequest
 		if err := c.BodyParser(&payload); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(UpdateDrinkResponse{
-				Error: err.Error(),
+				Error:   err.Error(),
 				Success: false,
 			})
 		}
@@ -51,7 +51,7 @@ func updateDrink(db *sql.DB) auth.FiberClaimsHandler {
 		err = validate.Struct(payload)
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(UpdateDrinkResponse{
-				Error: err.Error(),
+				Error:   err.Error(),
 				Success: false,
 			})
 		}

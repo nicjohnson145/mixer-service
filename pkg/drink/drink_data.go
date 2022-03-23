@@ -18,7 +18,6 @@ func (d drinkData) GetName() string {
 	return d.Name
 }
 
-
 func (d *drinkData) SetPrimaryAlcohol(v string) {
 	d.PrimaryAlcohol = v
 }

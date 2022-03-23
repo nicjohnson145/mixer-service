@@ -3,10 +3,10 @@ package drink
 import (
 	"database/sql"
 	"errors"
+	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"strconv"
-	"github.com/gofiber/fiber/v2"
 )
 
 type DeleteDrinkResponse struct {

@@ -1,9 +1,9 @@
 package drink
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"database/sql"
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 )
@@ -33,4 +33,3 @@ func defineRoutes(app *fiber.App, db *sql.DB) {
 	app.Put(common.DrinksV1+"/:id", auth.RequiresValidAccessToken(updateDrink(db)))
 	app.Get(common.DrinksV1+"/by-user/:username", auth.RequiresValidAccessToken(getDrinksByUser(db)))
 }
-

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"github.com/nicjohnson145/mixer-service/pkg/common/commontest"
 	"github.com/stretchr/testify/require"
@@ -10,7 +11,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-	"github.com/gofiber/fiber/v2"
 )
 
 func setupDbAndRouter(t *testing.T) (*fiber.App, func()) {

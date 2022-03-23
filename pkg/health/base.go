@@ -2,8 +2,8 @@ package health
 
 import (
 	"database/sql"
-	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"github.com/gofiber/fiber/v2"
+	"github.com/nicjohnson145/mixer-service/pkg/common"
 )
 
 func Init(app *fiber.App, db *sql.DB) error {

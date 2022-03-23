@@ -5,9 +5,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/db"
 	"github.com/stretchr/testify/require"
+	"net/http"
 	"os"
 	"testing"
-	"net/http"
 )
 
 func newDB(t *testing.T, name string) (*sql.DB, func()) {

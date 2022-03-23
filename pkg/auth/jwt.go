@@ -2,8 +2,8 @@ package auth
 
 import (
 	"errors"
-	"github.com/gofiber/fiber/v2"
 	"fmt"
+	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	log "github.com/sirupsen/logrus"

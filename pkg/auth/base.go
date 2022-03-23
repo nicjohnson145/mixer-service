@@ -2,10 +2,10 @@ package auth
 
 import (
 	"database/sql"
+	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
-	"github.com/gofiber/fiber/v2"
 )
 
 type User struct {
@@ -23,9 +23,9 @@ func Init(app *fiber.App, db *sql.DB) error {
 
 func defineRoutes(app *fiber.App, db *sql.DB) {
 	if common.DefaultedEnvVar("PROTECT_REGISTER_ENDPOINT", "false") == "true" {
-		app.Post(common.AuthV1 + "/register-user", RequiresValidAccessToken(registerNewUser(db)))
+		app.Post(common.AuthV1+"/register-user", RequiresValidAccessToken(registerNewUser(db)))
 	} else {
-		app.Post(common.AuthV1 + "/register-user", noopProtection(registerNewUser(db)))
+		app.Post(common.AuthV1+"/register-user", noopProtection(registerNewUser(db)))
 	}
 	app.Post(common.AuthV1+"/login", login(db))
 	app.Post(common.AuthV1+"/refresh", requiresValidRefreshToken(refresh()))

@@ -2,9 +2,9 @@ package common
 
 import (
 	"errors"
+	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"os"
-	"github.com/gofiber/fiber/v2"
 )
 
 var ErrNotFound = errors.New("not found")

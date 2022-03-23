@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
-	"github.com/gofiber/fiber/v2"
 )
 
 type CreateDrinkRequest struct {
@@ -20,7 +20,7 @@ type CreateDrinkResponse struct {
 }
 
 func createDrink(db *sql.DB) auth.FiberClaimsHandler {
-	
+
 	return func(c *fiber.Ctx, claims auth.Claims) error {
 		var payload CreateDrinkRequest
 		if err := c.BodyParser(&payload); err != nil {
@@ -30,7 +30,7 @@ func createDrink(db *sql.DB) auth.FiberClaimsHandler {
 		}
 		if err := validate.Struct(payload); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(CreateDrinkResponse{
-				Error: err.Error(),
+				Error:   err.Error(),
 				Success: false,
 			})
 		}
@@ -42,7 +42,7 @@ func createDrink(db *sql.DB) auth.FiberClaimsHandler {
 
 		if existingDrink != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(CreateDrinkResponse{
-				Error: fmt.Sprintf("user %v already has a drink named %v", claims.Username, payload.Name),
+				Error:   fmt.Sprintf("user %v already has a drink named %v", claims.Username, payload.Name),
 				Success: false,
 			})
 		}
@@ -63,7 +63,7 @@ func createDrink(db *sql.DB) auth.FiberClaimsHandler {
 
 		return c.JSON(CreateDrinkResponse{
 			Success: true,
-			ID: id,
+			ID:      id,
 		})
 	}
 }

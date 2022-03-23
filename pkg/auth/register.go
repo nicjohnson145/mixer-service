@@ -23,7 +23,7 @@ func registerNewUser(db *sql.DB) FiberClaimsHandler {
 		payload := new(RegisterNewUserRequest)
 		if err := c.BodyParser(&payload); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(RegisterNewUserResponse{
-				Error: err.Error(),
+				Error:   err.Error(),
 				Success: false,
 			})
 		}
@@ -32,10 +32,10 @@ func registerNewUser(db *sql.DB) FiberClaimsHandler {
 		if err != nil && !errors.Is(err, common.ErrNotFound) {
 			return err
 		}
-		
+
 		if existingUser != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(RegisterNewUserResponse{
-				Error: fmt.Sprintf("user %v already exists", payload.Username),
+				Error:   fmt.Sprintf("user %v already exists", payload.Username),
 				Success: false,
 			})
 		}
@@ -44,7 +44,7 @@ func registerNewUser(db *sql.DB) FiberClaimsHandler {
 		if err != nil {
 			return err
 		}
-		
+
 		newUser := UserModel{
 			Username: payload.Username,
 			Password: hashedPw,

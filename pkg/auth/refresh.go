@@ -18,7 +18,7 @@ func refresh() FiberClaimsHandler {
 		}
 
 		return c.JSON(RefreshTokenResponse{
-			Success: true,
+			Success:     true,
 			AccessToken: newToken,
 		})
 	}

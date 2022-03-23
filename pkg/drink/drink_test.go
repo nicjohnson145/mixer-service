@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth/authtest"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"github.com/nicjohnson145/mixer-service/pkg/common/commontest"
@@ -11,7 +12,6 @@ import (
 	"net/http"
 	"strings"
 	"testing"
-	"github.com/gofiber/fiber/v2"
 )
 
 func setupDbAndApp(t *testing.T) (*fiber.App, func()) {

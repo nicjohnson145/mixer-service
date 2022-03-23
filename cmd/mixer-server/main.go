@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/nicjohnson145/mixer-service/pkg/common"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
+	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"github.com/nicjohnson145/mixer-service/pkg/db"
 	"github.com/nicjohnson145/mixer-service/pkg/health"
 	log "github.com/sirupsen/logrus"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func main() {

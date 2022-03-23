@@ -2,8 +2,8 @@ package drink
 
 import (
 	"database/sql"
-	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/gofiber/fiber/v2"
+	"github.com/nicjohnson145/mixer-service/pkg/auth"
 )
 
 type GetDrinksByUserResponse struct {
@@ -39,7 +39,7 @@ func getDrinksByUser(db *sql.DB) auth.FiberClaimsHandler {
 
 		return c.JSON(GetDrinksByUserResponse{
 			Success: true,
-			Drinks: drinks,
+			Drinks:  drinks,
 		})
 	}
 

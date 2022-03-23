@@ -2,8 +2,8 @@ package drink
 
 import (
 	"database/sql"
-	"github.com/gofiber/fiber/v2"
 	"errors"
+	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"strconv"
@@ -45,7 +45,7 @@ func getDrink(db *sql.DB) auth.FiberClaimsHandler {
 
 		return c.JSON(GetDrinkResponse{
 			Success: true,
-			Drink: &drink,
+			Drink:   &drink,
 		})
 	}
 }

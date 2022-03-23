@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"database/sql"
 	"errors"
+	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 )
 
@@ -25,7 +25,7 @@ func login(db *sql.DB) common.FiberHandler {
 		var payload LoginRequest
 		if err := c.BodyParser(&payload); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(LoginResponse{
-				Error: err.Error(),
+				Error:   err.Error(),
 				Success: false,
 			})
 		}
@@ -34,8 +34,8 @@ func login(db *sql.DB) common.FiberHandler {
 		if err != nil {
 			if errors.Is(err, common.ErrNotFound) {
 				return c.Status(fiber.StatusUnauthorized).JSON(LoginResponse{
-					Error: err.Error(),
-					Success: false,
+					Error:    err.Error(),
+					Success:  false,
 					Username: payload.Username,
 				})
 			} else {
@@ -45,8 +45,8 @@ func login(db *sql.DB) common.FiberHandler {
 
 		if !comparePasswords(existingUser.Password, payload.Password) {
 			return c.Status(fiber.StatusUnauthorized).JSON(LoginResponse{
-				Error: "unauthorized",
-				Success: false,
+				Error:    "unauthorized",
+				Success:  false,
 				Username: payload.Username,
 			})
 		}
@@ -62,9 +62,9 @@ func login(db *sql.DB) common.FiberHandler {
 		}
 
 		return c.JSON(LoginResponse{
-			Success: true,
-			Username: payload.Username,
-			AccessToken: accessStr,
+			Success:      true,
+			Username:     payload.Username,
+			AccessToken:  accessStr,
 			RefreshToken: refreshStr,
 		})
 	}
