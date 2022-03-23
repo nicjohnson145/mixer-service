@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
+	"net/http"
 )
 
 func newDB(t *testing.T, name string) (*sql.DB, func()) {
@@ -28,4 +29,8 @@ func SetupDbAndRouter(t *testing.T, name string, routeFunc func(*fiber.App, *sql
 	app := fiber.New()
 	routeFunc(app, db)
 	return app, cleanup
+}
+
+func SetJsonHeader(r *http.Request) {
+	r.Header.Set("Content-type", "application/json")
 }

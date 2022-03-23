@@ -133,8 +133,8 @@ func validateAccessToken(token string) (Claims, error) {
 func requiresValidToken(handler FiberClaimsHandler, validationFunc func(string) (Claims, error)) common.FiberHandler {
 
 	return func(c *fiber.Ctx) error {
-		val, ok := c.GetReqHeaders()[AuthenticationHeader]
-		if !ok {
+		val := c.Get(AuthenticationHeader)
+		if val == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "unauthorized"})
 		}
 

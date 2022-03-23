@@ -22,6 +22,7 @@ func t_registerUser(t *testing.T, app *fiber.App, req RegisterNewUserRequest) {
 	require.NoError(t, err)
 
 	registerReq, err := http.NewRequest("POST", common.AuthV1+"/register-user", strings.NewReader(string(body)))
+	commontest.SetJsonHeader(registerReq)
 	require.NoError(t, err)
 
 	resp, err := app.Test(registerReq)
@@ -33,6 +34,7 @@ func t_login(t *testing.T, app *fiber.App, req LoginRequest) (int, LoginResponse
 	require.NoError(t, err)
 	loginReq, err := http.NewRequest("POST", common.AuthV1+"/login", strings.NewReader(string(body)))
 	require.NoError(t, err)
+	commontest.SetJsonHeader(loginReq)
 	resp, err := app.Test(loginReq)
 	require.NoError(t, err)
 
@@ -102,10 +104,10 @@ func TestRefresh(t *testing.T) {
 	app, cleanup := setupDbAndRouter(t)
 	defer cleanup()
 
-	protectedRoute := func(c *fiber.Ctx) error {
+	protectedRoute := func(c *fiber.Ctx, claims Claims) error {
 		return c.SendString(respText)
 	}
-	app.Get("/some-protected-route", protectedRoute)
+	app.Get("/some-protected-route", RequiresValidAccessToken(protectedRoute))
 
 	tokenResetFunc := func() func() {
 		currentTime := accessTokenDuration
