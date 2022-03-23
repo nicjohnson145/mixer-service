@@ -5,8 +5,8 @@ go 1.18
 require (
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/go-playground/validator/v10 v10.10.1
+	github.com/gofiber/fiber/v2 v2.30.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/gorilla/mux v1.8.0
 	github.com/huandu/go-sqlbuilder v1.13.0
 	github.com/rubenv/sql-migrate v1.1.1
 	github.com/sirupsen/logrus v1.8.1
@@ -22,7 +22,6 @@ require (
 	github.com/go-gorp/gorp/v3 v3.0.2 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
-	github.com/gofiber/fiber/v2 v2.30.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
