@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
+	"github.com/nicjohnson145/mixer-service/pkg/jwt"
 )
 
 type CreateDrinkRequest struct {
@@ -21,7 +22,7 @@ type CreateDrinkResponse struct {
 
 func createDrink(db *sql.DB) auth.FiberClaimsHandler {
 
-	return func(c *fiber.Ctx, claims auth.Claims) error {
+	return func(c *fiber.Ctx, claims jwt.Claims) error {
 		var payload CreateDrinkRequest
 		if err := c.BodyParser(&payload); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(CreateDrinkResponse{

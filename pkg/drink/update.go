@@ -7,6 +7,7 @@ import (
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"strconv"
+	"github.com/nicjohnson145/mixer-service/pkg/jwt"
 )
 
 type UpdateDrinkRequest struct {
@@ -19,7 +20,7 @@ type UpdateDrinkResponse struct {
 }
 
 func updateDrink(db *sql.DB) auth.FiberClaimsHandler {
-	return func(c *fiber.Ctx, claims auth.Claims) error {
+	return func(c *fiber.Ctx, claims jwt.Claims) error {
 		id, err := strconv.ParseInt(c.Params("id"), 10, 64)
 		if err != nil {
 			return err

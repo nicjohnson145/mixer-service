@@ -2,6 +2,7 @@ package auth
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/nicjohnson145/mixer-service/pkg/jwt"
 )
 
 type RefreshTokenResponse struct {
@@ -11,8 +12,8 @@ type RefreshTokenResponse struct {
 }
 
 func refresh() FiberClaimsHandler {
-	return func(c *fiber.Ctx, claims Claims) error {
-		newToken, err := GenerateAccessToken(TokenInputs{Username: claims.Username})
+	return func(c *fiber.Ctx, claims jwt.Claims) error {
+		newToken, err := jwt.GenerateAccessToken(jwt.TokenInputs{Username: claims.Username})
 		if err != nil {
 			return err
 		}

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
+	"github.com/nicjohnson145/mixer-service/pkg/jwt"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
@@ -13,8 +14,8 @@ type User struct {
 	Password string
 }
 
-type ClaimsHttpHandler func(http.ResponseWriter, *http.Request, Claims)
-type FiberClaimsHandler func(*fiber.Ctx, Claims) error
+type ClaimsHttpHandler func(http.ResponseWriter, *http.Request, jwt.Claims)
+type FiberClaimsHandler func(*fiber.Ctx, jwt.Claims) error
 
 func Init(app *fiber.App, db *sql.DB) error {
 	defineRoutes(app, db)
@@ -47,6 +48,31 @@ func comparePasswords(hashedPw string, plainPw string) bool {
 
 func noopProtection(handler FiberClaimsHandler) common.FiberHandler {
 	return func(c *fiber.Ctx) error {
-		return handler(c, Claims{})
+		return handler(c, jwt.Claims{})
 	}
+}
+
+func requiresValidToken(handler FiberClaimsHandler, validationFunc func(string) (jwt.Claims, error)) common.FiberHandler {
+
+	return func(c *fiber.Ctx) error {
+		val := c.Get(jwt.AuthenticationHeader)
+		if val == "" {
+			return common.NewGenericUnauthorizedResponse("no authentication header")
+		}
+
+		claims, err := validationFunc(val)
+		if err != nil {
+			return common.NewGenericUnauthorizedResponse("invalid token")
+		}
+
+		return handler(c, claims)
+	}
+}
+
+func RequiresValidAccessToken(handler FiberClaimsHandler) common.FiberHandler {
+	return requiresValidToken(handler, jwt.ValidateAccessToken)
+}
+
+func requiresValidRefreshToken(handler FiberClaimsHandler) common.FiberHandler {
+	return requiresValidToken(handler, jwt.ValidateRefreshToken)
 }

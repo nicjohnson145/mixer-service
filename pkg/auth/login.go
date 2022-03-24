@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
+	"github.com/nicjohnson145/mixer-service/pkg/jwt"
 )
 
 type LoginRequest struct {
@@ -39,12 +40,12 @@ func login(db *sql.DB) common.FiberHandler {
 			return common.NewGenericUnauthorizedResponse(fmt.Sprintf("password mismatch for %v", payload.Username))
 		}
 
-		accessStr, err := GenerateAccessToken(TokenInputs{Username: payload.Username})
+		accessStr, err := jwt.GenerateAccessToken(jwt.TokenInputs{Username: payload.Username})
 		if err != nil {
 			return err
 		}
 
-		refreshStr, err := generateRefreshToken(TokenInputs{Username: payload.Username})
+		refreshStr, err := jwt.GenerateRefreshToken(jwt.TokenInputs{Username: payload.Username})
 		if err != nil {
 			return err
 		}

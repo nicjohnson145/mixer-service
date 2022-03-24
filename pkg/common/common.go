@@ -67,7 +67,7 @@ func NewInternalServerErrorResp(context string, e error) ErrorResponse {
 func NewGenericUnauthorizedResponse(context string) ErrorResponse {
 	return ErrorResponse{
 		Msg:     "unauthorized",
-		Err:     fmt.Errorf("unauthorized butts"),
+		Err:     fmt.Errorf("unauthorized"),
 		Context: context,
 		Status:  fiber.StatusUnauthorized,
 	}

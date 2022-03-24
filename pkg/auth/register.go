@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
+	"github.com/nicjohnson145/mixer-service/pkg/jwt"
 )
 
 type RegisterNewUserRequest struct {
@@ -19,7 +20,7 @@ type RegisterNewUserResponse struct {
 }
 
 func registerNewUser(db *sql.DB) FiberClaimsHandler {
-	return func(c *fiber.Ctx, claims Claims) error {
+	return func(c *fiber.Ctx, claims jwt.Claims) error {
 		payload := new(RegisterNewUserRequest)
 		if err := c.BodyParser(&payload); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(RegisterNewUserResponse{

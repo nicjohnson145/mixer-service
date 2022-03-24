@@ -2,6 +2,7 @@ package drink
 
 import (
 	"database/sql"
+	"github.com/nicjohnson145/mixer-service/pkg/jwt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 )
@@ -13,7 +14,7 @@ type GetDrinksByUserResponse struct {
 }
 
 func getDrinksByUser(db *sql.DB) auth.FiberClaimsHandler {
-	return func(c *fiber.Ctx, claims auth.Claims) error {
+	return func(c *fiber.Ctx, claims jwt.Claims) error {
 		username := c.Params("username")
 
 		var modelList []Model

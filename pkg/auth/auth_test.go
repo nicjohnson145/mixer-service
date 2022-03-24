@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
+	"github.com/nicjohnson145/mixer-service/pkg/jwt"
 	"github.com/nicjohnson145/mixer-service/pkg/common/commontest"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
@@ -120,15 +121,15 @@ func TestRefresh(t *testing.T) {
 	app, cleanup := setupDbAndRouter(t)
 	defer cleanup()
 
-	protectedRoute := func(c *fiber.Ctx, claims Claims) error {
+	protectedRoute := func(c *fiber.Ctx, claims jwt.Claims) error {
 		return c.SendString(respText)
 	}
 	app.Get("/some-protected-route", RequiresValidAccessToken(protectedRoute))
 
 	tokenResetFunc := func() func() {
-		currentTime := accessTokenDuration
+		currentTime := jwt.GetAccessTokenDuration()
 		return func() {
-			accessTokenDuration = currentTime
+			jwt.SetAccessTokenDuration(currentTime)
 		}
 	}
 	resetTokenDuration := tokenResetFunc()
@@ -137,7 +138,7 @@ func TestRefresh(t *testing.T) {
 	t_protectedRoute := func(t *testing.T, app *fiber.App, token string) (int, string) {
 		req, err := http.NewRequest(http.MethodGet, "/some-protected-route", nil)
 		require.NoError(t, err)
-		req.Header.Set(AuthenticationHeader, token)
+		req.Header.Set(jwt.AuthenticationHeader, token)
 
 		resp, err := app.Test(req)
 		require.NoError(t, err)
@@ -162,7 +163,7 @@ func TestRefresh(t *testing.T) {
 	t_refresh := func(t *testing.T, app *fiber.App, refreshToken string) (int, RefreshTokenResponse) {
 		req, err := http.NewRequest(http.MethodPost, common.AuthV1+"/refresh", nil)
 		require.NoError(t, err)
-		req.Header.Set(AuthenticationHeader, refreshToken)
+		req.Header.Set(jwt.AuthenticationHeader, refreshToken)
 
 		resp, err := app.Test(req)
 		require.NoError(t, err)
@@ -176,7 +177,7 @@ func TestRefresh(t *testing.T) {
 	}
 
 	// Set the token expiry to something short, so we can get an "expired" token
-	accessTokenDuration = time.Duration(1 * time.Second)
+	jwt.SetAccessTokenDuration(time.Duration(1 * time.Second))
 
 	// Register a new user
 	t_registerUser(t, app, RegisterNewUserRequest{Username: username, Password: password})
