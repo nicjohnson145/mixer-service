@@ -155,7 +155,6 @@ func TestFullCRUDLoop(t *testing.T) {
 	// Fetch it as the orignal author
 	_, getResp := t_getDrink_ok(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user1")})
 	expectedGetResp := GetDrinkResponse{
-		Success: true,
 		Drink: &Drink{
 			ID:        1,
 			Username:  "user1",
@@ -176,7 +175,6 @@ func TestFullCRUDLoop(t *testing.T) {
 	// Should still be the same
 	_, getResp = t_getDrink_ok(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user1")})
 	expectedGetResp = GetDrinkResponse{
-		Success: true,
 		Drink: &Drink{
 			ID:        1,
 			Username:  "user1",
@@ -189,7 +187,6 @@ func TestFullCRUDLoop(t *testing.T) {
 	_, _ = t_updateDrink_ok(t, app, createResp.ID, updateReq, commontest.AuthOpts{Username: to.StringPtr("user1")})
 	_, getResp = t_getDrink_ok(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user1")})
 	expectedGetResp = GetDrinkResponse{
-		Success: true,
 		Drink: &Drink{
 			ID:        1,
 			Username:  "user1",
@@ -202,7 +199,6 @@ func TestFullCRUDLoop(t *testing.T) {
 	_, _ = t_deleteDrink_fail(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
 	_, getResp = t_getDrink_ok(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user1")})
 	expectedGetResp = GetDrinkResponse{
-		Success: true,
 		Drink: &Drink{
 			ID:        1,
 			Username:  "user1",
@@ -240,7 +236,6 @@ func TestPublicDrinksFetchableByAnyone(t *testing.T) {
 	// Fetch it as someone else, it should succeed since it's public
 	_, getResp := t_getDrink_ok(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
 	expectedGetResp := GetDrinkResponse{
-		Success: true,
 		Drink: &Drink{
 			ID:        1,
 			Username:  "user1",
@@ -292,45 +287,45 @@ func TestGetDrinksByUser(t *testing.T) {
 	}
 
 	// Fetching as user1 should result in all drinks
-	_, _ = t_getDrinksByUser_ok(t, app, "user1", commontest.AuthOpts{Username: to.StringPtr("user1")})
-	//expectedGetResp := GetDrinksByUserResponse{
-	//    Success: true,
-	//    Drinks: []Drink{
-	//        {
-	//            ID:        1,
-	//            Username:  "user1",
-	//            drinkData: first,
-	//        },
-	//        {
-	//            ID:        2,
-	//            Username:  "user1",
-	//            drinkData: second,
-	//        },
-	//        {
-	//            ID:        3,
-	//            Username:  "user1",
-	//            drinkData: third,
-	//        },
-	//    },
-	//}
-	//require.Equal(t, expectedGetResp, getResp)
+	_, getResp := t_getDrinksByUser_ok(t, app, "user1", commontest.AuthOpts{Username: to.StringPtr("user1")})
+	expectedGetResp := GetDrinksByUserResponse{
+		Success: true,
+		Drinks: []Drink{
+			{
+				ID:        1,
+				Username:  "user1",
+				drinkData: first,
+			},
+			{
+				ID:        2,
+				Username:  "user1",
+				drinkData: second,
+			},
+			{
+				ID:        3,
+				Username:  "user1",
+				drinkData: third,
+			},
+		},
+	}
+	require.Equal(t, expectedGetResp, getResp)
 
-	//// Fetching as user2 should only return the public drinks
-	//_, getResp = t_getDrinksByUser_ok(t, app, "user1", commontest.AuthOpts{Username: to.StringPtr("user2")})
-	//expectedGetResp = GetDrinksByUserResponse{
-	//    Success: true,
-	//    Drinks: []Drink{
-	//        {
-	//            ID:        1,
-	//            Username:  "user1",
-	//            drinkData: first,
-	//        },
-	//        {
-	//            ID:        2,
-	//            Username:  "user1",
-	//            drinkData: second,
-	//        },
-	//    },
-	//}
-	//require.Equal(t, expectedGetResp, getResp)
+	// Fetching as user2 should only return the public drinks
+	_, getResp = t_getDrinksByUser_ok(t, app, "user1", commontest.AuthOpts{Username: to.StringPtr("user2")})
+	expectedGetResp = GetDrinksByUserResponse{
+		Success: true,
+		Drinks: []Drink{
+			{
+				ID:        1,
+				Username:  "user1",
+				drinkData: first,
+			},
+			{
+				ID:        2,
+				Username:  "user1",
+				drinkData: second,
+			},
+		},
+	}
+	require.Equal(t, expectedGetResp, getResp)
 }

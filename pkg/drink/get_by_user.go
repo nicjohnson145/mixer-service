@@ -5,10 +5,10 @@ import (
 	"github.com/nicjohnson145/mixer-service/pkg/jwt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
+	"github.com/nicjohnson145/mixer-service/pkg/common"
 )
 
 type GetDrinksByUserResponse struct {
-	Error   string  `json:"error"`
 	Success bool    `json:"success"`
 	Drinks  []Drink `json:"drinks"`
 }
@@ -26,14 +26,14 @@ func getDrinksByUser(db *sql.DB) auth.FiberClaimsHandler {
 		}
 
 		if err != nil {
-			return err
+			return common.NewInternalServerErrorResp("getting drinks from DB", err)
 		}
 
 		drinks := make([]Drink, 0, len(modelList))
 		for _, m := range modelList {
 			d, err := fromDb(m)
 			if err != nil {
-				return err
+				return common.NewInternalServerErrorResp("converting DB model", err)
 			}
 			drinks = append(drinks, d)
 		}

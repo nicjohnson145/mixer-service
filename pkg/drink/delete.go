@@ -11,7 +11,6 @@ import (
 )
 
 type DeleteDrinkResponse struct {
-	Error   string `json:"error,omitempty"`
 	Success bool   `json:"success"`
 }
 
@@ -20,27 +19,23 @@ func deleteDrink(db *sql.DB) auth.FiberClaimsHandler {
 	return func(c *fiber.Ctx, claims jwt.Claims) error {
 		id, err := strconv.ParseInt(c.Params("id"), 10, 64)
 		if err != nil {
-			return err
+			return common.NewBadRequestResponse(err)
 		}
 		model, err := getByID(id, db)
 		if err != nil {
 			if errors.Is(err, common.ErrNotFound) {
-				return c.Status(fiber.StatusNotFound).JSON(DeleteDrinkResponse{
-					Success: false,
-				})
+				return common.NewGenericNotFoundResponse("getting drink from DB")
 			} else {
-				return err
+				return common.NewInternalServerErrorResp("getting drink from DB", err)
 			}
 		}
 		if model.Username != claims.Username {
-			return c.Status(fiber.StatusNotFound).JSON(DeleteDrinkResponse{
-				Success: false,
-			})
+			return common.NewGenericNotFoundResponse("username mismatch")
 		}
 
 		err = deleteModel(id, db)
 		if err != nil {
-			return err
+			return common.NewInternalServerErrorResp("deleting model from DB", err)
 		}
 
 		return c.JSON(DeleteDrinkResponse{

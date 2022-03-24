@@ -15,7 +15,6 @@ type UpdateDrinkRequest struct {
 }
 
 type UpdateDrinkResponse struct {
-	Error   string `json:"error,omitempty"`
 	Success bool   `json:"success"`
 }
 
@@ -23,38 +22,28 @@ func updateDrink(db *sql.DB) auth.FiberClaimsHandler {
 	return func(c *fiber.Ctx, claims jwt.Claims) error {
 		id, err := strconv.ParseInt(c.Params("id"), 10, 64)
 		if err != nil {
-			return err
+			return common.NewBadRequestResponse(err)
 		}
 		model, err := getByID(id, db)
 		if err != nil {
 			if errors.Is(err, common.ErrNotFound) {
-				return c.Status(fiber.StatusNotFound).JSON(UpdateDrinkResponse{
-					Success: false,
-				})
+				return common.NewGenericNotFoundResponse("getting drink from DB")
 			} else {
-				return err
+				return common.NewInternalServerErrorResp("getting drink from DB", err)
 			}
 		}
 		if model.Username != claims.Username {
-			return c.Status(fiber.StatusNotFound).JSON(UpdateDrinkResponse{
-				Success: false,
-			})
+			return common.NewGenericNotFoundResponse("username mismatch")
 		}
 
 		var payload UpdateDrinkRequest
 		if err := c.BodyParser(&payload); err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(UpdateDrinkResponse{
-				Error:   err.Error(),
-				Success: false,
-			})
+			return common.NewBadRequestResponse(err)
 		}
 
 		err = validate.Struct(payload)
 		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(UpdateDrinkResponse{
-				Error:   err.Error(),
-				Success: false,
-			})
+			return common.NewBadRequestResponse(err)
 		}
 
 		drink := Drink{}
@@ -64,11 +53,11 @@ func updateDrink(db *sql.DB) auth.FiberClaimsHandler {
 
 		newModel, err := toDb(drink)
 		if err != nil {
-			return err
+			return common.NewInternalServerErrorResp("converting to DB model", err)
 		}
 		err = updateModel(newModel, db)
 		if err != nil {
-			return err
+			return common.NewInternalServerErrorResp("updating in DB", err)
 		}
 
 		return c.JSON(UpdateDrinkResponse{

@@ -73,6 +73,15 @@ func NewGenericUnauthorizedResponse(context string) ErrorResponse {
 	}
 }
 
+func NewGenericNotFoundResponse(context string) ErrorResponse {
+	return ErrorResponse{
+		Msg:     "not found",
+		Err:     fmt.Errorf("not found"),
+		Context: context,
+		Status:  fiber.StatusNotFound,
+	}
+}
+
 func NewBadRequestResponse(e error) ErrorResponse {
 	return ErrorResponse{
 		Msg:     "bad request",

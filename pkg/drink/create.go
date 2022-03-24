@@ -15,8 +15,6 @@ type CreateDrinkRequest struct {
 }
 
 type CreateDrinkResponse struct {
-	Error   string `json:"error,omitempty"`
-	Success bool   `json:"success"`
 	ID      int64  `json:"id,omitempty"`
 }
 
@@ -25,27 +23,23 @@ func createDrink(db *sql.DB) auth.FiberClaimsHandler {
 	return func(c *fiber.Ctx, claims jwt.Claims) error {
 		var payload CreateDrinkRequest
 		if err := c.BodyParser(&payload); err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(CreateDrinkResponse{
-				Success: false,
-			})
+			return common.NewBadRequestResponse(err)
 		}
 		if err := validate.Struct(payload); err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(CreateDrinkResponse{
-				Error:   err.Error(),
-				Success: false,
-			})
+			return common.NewBadRequestResponse(err)
 		}
 
 		existingDrink, err := getByNameAndUsername(payload.Name, claims.Username, db)
 		if err != nil && !errors.Is(err, common.ErrNotFound) {
-			return err
+			return common.NewInternalServerErrorResp("checking existance in DB", err)
 		}
 
 		if existingDrink != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(CreateDrinkResponse{
-				Error:   fmt.Sprintf("user %v already has a drink named %v", claims.Username, payload.Name),
-				Success: false,
-			})
+			return common.ErrorResponse{
+				Msg: fmt.Sprintf("user %v already has a drink named %v", claims.Username, payload.Name),
+				Err: fmt.Errorf("exising name/user combination"),
+				Status: fiber.StatusBadRequest,
+			}
 		}
 
 		drink := Drink{}
@@ -54,16 +48,15 @@ func createDrink(db *sql.DB) auth.FiberClaimsHandler {
 
 		model, err := toDb(drink)
 		if err != nil {
-			return err
+			return common.NewInternalServerErrorResp("converting to DB model", err)
 		}
 
 		id, err := create(model, db)
 		if err != nil {
-			return err
+			return common.NewInternalServerErrorResp("inserting into DB", err)
 		}
 
 		return c.JSON(CreateDrinkResponse{
-			Success: true,
 			ID:      id,
 		})
 	}
