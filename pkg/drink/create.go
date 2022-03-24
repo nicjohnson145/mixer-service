@@ -15,7 +15,7 @@ type CreateDrinkRequest struct {
 }
 
 type CreateDrinkResponse struct {
-	ID      int64  `json:"id,omitempty"`
+	ID int64 `json:"id,omitempty"`
 }
 
 func createDrink(db *sql.DB) auth.FiberClaimsHandler {
@@ -36,8 +36,8 @@ func createDrink(db *sql.DB) auth.FiberClaimsHandler {
 
 		if existingDrink != nil {
 			return common.ErrorResponse{
-				Msg: fmt.Sprintf("user %v already has a drink named %v", claims.Username, payload.Name),
-				Err: fmt.Errorf("exising name/user combination"),
+				Msg:    fmt.Sprintf("user %v already has a drink named %v", claims.Username, payload.Name),
+				Err:    fmt.Errorf("exising name/user combination"),
 				Status: fiber.StatusBadRequest,
 			}
 		}
@@ -57,7 +57,7 @@ func createDrink(db *sql.DB) auth.FiberClaimsHandler {
 		}
 
 		return c.JSON(CreateDrinkResponse{
-			ID:      id,
+			ID: id,
 		})
 	}
 }

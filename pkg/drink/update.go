@@ -6,8 +6,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
-	"strconv"
 	"github.com/nicjohnson145/mixer-service/pkg/jwt"
+	"strconv"
 )
 
 type UpdateDrinkRequest struct {
@@ -15,7 +15,7 @@ type UpdateDrinkRequest struct {
 }
 
 type UpdateDrinkResponse struct {
-	Success bool   `json:"success"`
+	Success bool `json:"success"`
 }
 
 func updateDrink(db *sql.DB) auth.FiberClaimsHandler {

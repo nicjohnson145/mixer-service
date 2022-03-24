@@ -2,8 +2,8 @@ package commontest
 
 import (
 	"database/sql"
-	"io"
 	"encoding/json"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -54,11 +54,10 @@ func RequireNotOkStatus(t *testing.T, resp *http.Response) {
 
 type Req[T any] struct {
 	Method string
-	Path string
-	Body *T
-	Auth *AuthOpts
+	Path   string
+	Body   *T
+	Auth   *AuthOpts
 }
-
 
 func T_call_ok[T any](t *testing.T, app *fiber.App, req *http.Request) (int, T) {
 	t.Helper()

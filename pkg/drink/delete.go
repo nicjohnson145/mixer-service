@@ -6,12 +6,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
-	"strconv"
 	"github.com/nicjohnson145/mixer-service/pkg/jwt"
+	"strconv"
 )
 
 type DeleteDrinkResponse struct {
-	Success bool   `json:"success"`
+	Success bool `json:"success"`
 }
 
 func deleteDrink(db *sql.DB) auth.FiberClaimsHandler {

@@ -20,9 +20,9 @@ func t_createDrink_ok(t *testing.T, app *fiber.App, r CreateDrinkRequest, o comm
 	t.Helper()
 	req := commontest.T_req(t, commontest.Req[CreateDrinkRequest]{
 		Method: http.MethodPost,
-		Path: common.DrinksV1+"/create",
-		Body: &r,
-		Auth: &o,
+		Path:   common.DrinksV1 + "/create",
+		Body:   &r,
+		Auth:   &o,
 	})
 	return commontest.T_call_ok[CreateDrinkResponse](t, app, req)
 }
@@ -31,9 +31,9 @@ func t_createDrink_fail(t *testing.T, app *fiber.App, r CreateDrinkRequest, o co
 	t.Helper()
 	req := commontest.T_req(t, commontest.Req[CreateDrinkRequest]{
 		Method: http.MethodPost,
-		Path: common.DrinksV1+"/create",
-		Body: &r,
-		Auth: &o,
+		Path:   common.DrinksV1 + "/create",
+		Body:   &r,
+		Auth:   &o,
 	})
 	return commontest.T_call_fail(t, app, req)
 }
@@ -42,8 +42,8 @@ func t_getDrink_ok(t *testing.T, app *fiber.App, id int64, o commontest.AuthOpts
 	t.Helper()
 	req := commontest.T_req(t, commontest.Req[any]{
 		Method: http.MethodGet,
-		Path: common.DrinksV1+fmt.Sprintf("/%v", id),
-		Auth: &o,
+		Path:   common.DrinksV1 + fmt.Sprintf("/%v", id),
+		Auth:   &o,
 	})
 	return commontest.T_call_ok[GetDrinkResponse](t, app, req)
 }
@@ -52,8 +52,8 @@ func t_getDrink_fail(t *testing.T, app *fiber.App, id int64, o commontest.AuthOp
 	t.Helper()
 	req := commontest.T_req(t, commontest.Req[any]{
 		Method: http.MethodGet,
-		Path: common.DrinksV1+fmt.Sprintf("/%v", id),
-		Auth: &o,
+		Path:   common.DrinksV1 + fmt.Sprintf("/%v", id),
+		Auth:   &o,
 	})
 	return commontest.T_call_fail(t, app, req)
 }
@@ -62,9 +62,9 @@ func t_updateDrink_ok(t *testing.T, app *fiber.App, id int64, r UpdateDrinkReque
 	t.Helper()
 	req := commontest.T_req(t, commontest.Req[UpdateDrinkRequest]{
 		Method: http.MethodPut,
-		Path: common.DrinksV1+fmt.Sprintf("/%v", id),
-		Body: &r,
-		Auth: &o,
+		Path:   common.DrinksV1 + fmt.Sprintf("/%v", id),
+		Body:   &r,
+		Auth:   &o,
 	})
 	return commontest.T_call_ok[UpdateDrinkResponse](t, app, req)
 }
@@ -73,9 +73,9 @@ func t_updateDrink_fail(t *testing.T, app *fiber.App, id int64, r UpdateDrinkReq
 	t.Helper()
 	req := commontest.T_req(t, commontest.Req[UpdateDrinkRequest]{
 		Method: http.MethodPut,
-		Path: common.DrinksV1+fmt.Sprintf("/%v", id),
-		Body: &r,
-		Auth: &o,
+		Path:   common.DrinksV1 + fmt.Sprintf("/%v", id),
+		Body:   &r,
+		Auth:   &o,
 	})
 	return commontest.T_call_fail(t, app, req)
 }
@@ -84,8 +84,8 @@ func t_deleteDrink_ok(t *testing.T, app *fiber.App, id int64, o commontest.AuthO
 	t.Helper()
 	req := commontest.T_req(t, commontest.Req[any]{
 		Method: http.MethodDelete,
-		Path: common.DrinksV1+fmt.Sprintf("/%v", id),
-		Auth: &o,
+		Path:   common.DrinksV1 + fmt.Sprintf("/%v", id),
+		Auth:   &o,
 	})
 	return commontest.T_call_ok[DeleteDrinkResponse](t, app, req)
 }
@@ -94,8 +94,8 @@ func t_deleteDrink_fail(t *testing.T, app *fiber.App, id int64, o commontest.Aut
 	t.Helper()
 	req := commontest.T_req(t, commontest.Req[any]{
 		Method: http.MethodDelete,
-		Path: common.DrinksV1+fmt.Sprintf("/%v", id),
-		Auth: &o,
+		Path:   common.DrinksV1 + fmt.Sprintf("/%v", id),
+		Auth:   &o,
 	})
 	return commontest.T_call_fail(t, app, req)
 }
@@ -104,8 +104,8 @@ func t_getDrinksByUser_ok(t *testing.T, app *fiber.App, user string, o commontes
 	t.Helper()
 	req := commontest.T_req(t, commontest.Req[any]{
 		Method: http.MethodGet,
-		Path: common.DrinksV1+"/by-user/"+user,
-		Auth: &o,
+		Path:   common.DrinksV1 + "/by-user/" + user,
+		Auth:   &o,
 	})
 	return commontest.T_call_ok[GetDrinksByUserResponse](t, app, req)
 }
@@ -114,8 +114,8 @@ func t_getDrinksByUser_fail(t *testing.T, app *fiber.App, user string, o commont
 	t.Helper()
 	req := commontest.T_req(t, commontest.Req[any]{
 		Method: http.MethodGet,
-		Path: common.DrinksV1+"/by-user/"+user,
-		Auth: &o,
+		Path:   common.DrinksV1 + "/by-user/" + user,
+		Auth:   &o,
 	})
 	return commontest.T_call_fail(t, app, req)
 }

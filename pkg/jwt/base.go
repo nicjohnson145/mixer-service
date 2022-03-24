@@ -135,4 +135,3 @@ func ValidateAccessToken(token string) (Claims, error) {
 
 	return claims, nil
 }
-

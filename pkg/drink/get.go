@@ -11,7 +11,7 @@ import (
 )
 
 type GetDrinkResponse struct {
-	Drink   *Drink `json:"drink"`
+	Drink *Drink `json:"drink"`
 }
 
 func getDrink(db *sql.DB) auth.FiberClaimsHandler {
@@ -39,7 +39,7 @@ func getDrink(db *sql.DB) auth.FiberClaimsHandler {
 		}
 
 		return c.JSON(GetDrinkResponse{
-			Drink:   &drink,
+			Drink: &drink,
 		})
 	}
 }
