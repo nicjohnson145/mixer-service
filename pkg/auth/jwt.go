@@ -135,12 +135,12 @@ func requiresValidToken(handler FiberClaimsHandler, validationFunc func(string) 
 	return func(c *fiber.Ctx) error {
 		val := c.Get(AuthenticationHeader)
 		if val == "" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "unauthorized"})
+			return common.NewGenericUnauthorizedResponse("no authentication header")
 		}
 
 		claims, err := validationFunc(val)
 		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "unauthorized"})
+			return common.NewGenericUnauthorizedResponse("invalid token")
 		}
 
 		return handler(c, claims)

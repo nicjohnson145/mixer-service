@@ -29,7 +29,7 @@ func t_registerUser(t *testing.T, app *fiber.App, req RegisterNewUserRequest) {
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
-func t_login(t *testing.T, app *fiber.App, req LoginRequest) (int, LoginResponse) {
+func t_login(t *testing.T, app *fiber.App, req LoginRequest) *http.Response {
 	body, err := json.Marshal(req)
 	require.NoError(t, err)
 	loginReq, err := http.NewRequest("POST", common.AuthV1+"/login", strings.NewReader(string(body)))
@@ -38,11 +38,28 @@ func t_login(t *testing.T, app *fiber.App, req LoginRequest) (int, LoginResponse
 	resp, err := app.Test(loginReq)
 	require.NoError(t, err)
 
+	return resp
+}
+
+func t_login_ok(t *testing.T, app *fiber.App, req LoginRequest) (int, LoginResponse) {
+	resp := t_login(t, app, req)
+	commontest.RequireOkStatus(t, resp)
+
 	var r LoginResponse
 	defer resp.Body.Close()
-	err = json.NewDecoder(resp.Body).Decode(&r)
+	err := json.NewDecoder(resp.Body).Decode(&r)
 	require.NoError(t, err)
+	return resp.StatusCode, r
+}
 
+func t_login_fail(t *testing.T, app *fiber.App, req LoginRequest) (int, common.OutboundErrResponse) {
+	resp := t_login(t, app, req)
+	commontest.RequireNotOkStatus(t, resp)
+
+	var r common.OutboundErrResponse
+	defer resp.Body.Close()
+	err := json.NewDecoder(resp.Body).Decode(&r)
+	require.NoError(t, err)
 	return resp.StatusCode, r
 }
 
@@ -80,15 +97,14 @@ func TestRegisterLogin(t *testing.T) {
 
 	for _, tc := range loginData {
 		t.Run("login_cases_"+tc.name, func(t *testing.T) {
-			status, resp := t_login(t, app, tc.input)
-			require.Equal(t, tc.expectedCode, status)
-
 			if tc.expectedToken {
+				status, resp := t_login_ok(t, app, tc.input)
+				require.Equal(t, tc.expectedCode, status)
 				require.NotEmpty(t, resp.AccessToken)
 				require.NotEmpty(t, resp.RefreshToken)
 			} else {
-				require.Empty(t, resp.AccessToken)
-				require.Empty(t, resp.RefreshToken)
+				status, _ := t_login_fail(t, app, tc.input)
+				require.Equal(t, status, tc.expectedCode)
 			}
 		})
 	}
@@ -166,7 +182,7 @@ func TestRefresh(t *testing.T) {
 	t_registerUser(t, app, RegisterNewUserRequest{Username: username, Password: password})
 
 	// Successfully login
-	status, loginResp := t_login(t, app, LoginRequest{Username: username, Password: password})
+	status, loginResp := t_login_ok(t, app, LoginRequest{Username: username, Password: password})
 	require.Equal(t, http.StatusOK, status)
 
 	// Hit a protected route to prove our token is valid
