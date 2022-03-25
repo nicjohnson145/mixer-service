@@ -1,21 +1,16 @@
 package main
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
-	"github.com/nicjohnson145/mixer-service/pkg/drink"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"github.com/nicjohnson145/mixer-service/pkg/db"
+	"github.com/nicjohnson145/mixer-service/pkg/drink"
 	"github.com/nicjohnson145/mixer-service/pkg/health"
 	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-	app := fiber.New(fiber.Config{
-		Immutable: true,
-	})
-	app.Use(logger.New())
+	app := common.NewApp()
 
 	db := db.NewDBOrDie(common.DefaultedEnvVar("DB_PATH", "mixer.db"))
 

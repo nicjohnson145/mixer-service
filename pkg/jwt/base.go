@@ -1,11 +1,9 @@
-package auth
+package jwt
 
 import (
 	"errors"
 	"fmt"
-	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
-	"github.com/nicjohnson145/mixer-service/pkg/common"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"time"
@@ -20,6 +18,14 @@ const (
 var jwtSecret = getSecretKey()
 var accessTokenDuration = getAccessTokenDuration()
 var refreshTokenDuration = getRefreshTokenDuration()
+
+func SetAccessTokenDuration(t time.Duration) {
+	accessTokenDuration = t
+}
+
+func GetAccessTokenDuration() time.Duration {
+	return accessTokenDuration
+}
 
 var ErrInvalidToken = errors.New("invalid token")
 
@@ -68,7 +74,7 @@ func GenerateAccessToken(i TokenInputs) (string, error) {
 	return generateTokenStringWithExpiry(i, tokenTypeAccess, accessTokenDuration)
 }
 
-func generateRefreshToken(i TokenInputs) (string, error) {
+func GenerateRefreshToken(i TokenInputs) (string, error) {
 	return generateTokenStringWithExpiry(i, tokenTypeRefresh, refreshTokenDuration)
 }
 
@@ -104,7 +110,7 @@ func validateToken(token string) (Claims, error) {
 	return claims, nil
 }
 
-func validateRefreshToken(token string) (Claims, error) {
+func ValidateRefreshToken(token string) (Claims, error) {
 	claims, err := validateToken(token)
 	if err != nil {
 		return Claims{}, err
@@ -117,7 +123,7 @@ func validateRefreshToken(token string) (Claims, error) {
 	return claims, nil
 }
 
-func validateAccessToken(token string) (Claims, error) {
+func ValidateAccessToken(token string) (Claims, error) {
 	claims, err := validateToken(token)
 	if err != nil {
 		return Claims{}, err
@@ -128,29 +134,4 @@ func validateAccessToken(token string) (Claims, error) {
 	}
 
 	return claims, nil
-}
-
-func requiresValidToken(handler FiberClaimsHandler, validationFunc func(string) (Claims, error)) common.FiberHandler {
-
-	return func(c *fiber.Ctx) error {
-		val := c.Get(AuthenticationHeader)
-		if val == "" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "unauthorized"})
-		}
-
-		claims, err := validationFunc(val)
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "unauthorized"})
-		}
-
-		return handler(c, claims)
-	}
-}
-
-func RequiresValidAccessToken(handler FiberClaimsHandler) common.FiberHandler {
-	return requiresValidToken(handler, validateAccessToken)
-}
-
-func requiresValidRefreshToken(handler FiberClaimsHandler) common.FiberHandler {
-	return requiresValidToken(handler, validateRefreshToken)
 }
