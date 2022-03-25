@@ -15,35 +15,32 @@ type RegisterNewUserRequest struct {
 }
 
 type RegisterNewUserResponse struct {
-	Error   string `json:"error,omitempty"`
-	Success bool   `json:"success"`
+	Success bool `json:"success"`
 }
 
 func registerNewUser(db *sql.DB) FiberClaimsHandler {
 	return func(c *fiber.Ctx, claims jwt.Claims) error {
 		payload := new(RegisterNewUserRequest)
 		if err := c.BodyParser(&payload); err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(RegisterNewUserResponse{
-				Error:   err.Error(),
-				Success: false,
-			})
+			return common.NewBadRequestResponse(err)
 		}
 
 		existingUser, err := getUserByName(payload.Username, db)
 		if err != nil && !errors.Is(err, common.ErrNotFound) {
-			return err
+			return common.NewInternalServerErrorResp("checking DB for user", err)
 		}
 
 		if existingUser != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(RegisterNewUserResponse{
-				Error:   fmt.Sprintf("user %v already exists", payload.Username),
-				Success: false,
-			})
+			return common.ErrorResponse{
+				Err:    fmt.Errorf("user already exists"),
+				Msg:    fmt.Sprintf("user %v already exists", payload.Username),
+				Status: fiber.StatusBadRequest,
+			}
 		}
 
 		hashedPw, err := hashPassword(payload.Password)
 		if err != nil {
-			return err
+			return common.NewInternalServerErrorResp("hashing password", err)
 		}
 
 		newUser := UserModel{
@@ -52,7 +49,7 @@ func registerNewUser(db *sql.DB) FiberClaimsHandler {
 		}
 		err = createUser(newUser, db)
 		if err != nil {
-			return err
+			return common.NewInternalServerErrorResp("inserting into DB", err)
 		}
 
 		return c.JSON(RegisterNewUserResponse{

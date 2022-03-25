@@ -42,12 +42,12 @@ func login(db *sql.DB) common.FiberHandler {
 
 		accessStr, err := jwt.GenerateAccessToken(jwt.TokenInputs{Username: payload.Username})
 		if err != nil {
-			return err
+			return common.NewInternalServerErrorResp("generating access token", err)
 		}
 
 		refreshStr, err := jwt.GenerateRefreshToken(jwt.TokenInputs{Username: payload.Username})
 		if err != nil {
-			return err
+			return common.NewInternalServerErrorResp("generating refresh token", err)
 		}
 
 		return c.JSON(LoginResponse{
