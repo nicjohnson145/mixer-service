@@ -3,10 +3,10 @@ package drink
 type drinkData struct {
 	Name           string   `json:"name" validate:"required"`
 	PrimaryAlcohol string   `json:"primary_alcohol" validate:"required"`
-	PreferredGlass string   `json:"preferred_glass"`
+	PreferredGlass string   `json:"preferred_glass,omitempty"`
 	Ingredients    []string `json:"ingredients" validate:"required"`
-	Instructions   string   `json:"instructions"`
-	Notes          string   `json:"notes"`
+	Instructions   string   `json:"instructions,omitempty"`
+	Notes          string   `json:"notes,omitempty"`
 	Publicity      string   `json:"publicity" validate:"required"`
 }
 
