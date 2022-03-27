@@ -7,7 +7,8 @@ import (
 )
 
 type RefreshTokenResponse struct {
-	AccessToken string `json:"access_token,omitempty"`
+	AccessToken string `json:"access_token"`
+	RefreshToekn string `json:"refresh_token"`
 }
 
 func refresh() FiberClaimsHandler {
@@ -17,8 +18,14 @@ func refresh() FiberClaimsHandler {
 			return common.NewInternalServerErrorResp("generating access token", err)
 		}
 
+		newRefresh, err := jwt.GenerateRefreshToken(jwt.TokenInputs{Username: claims.Username})
+		if err != nil {
+			return common.NewInternalServerErrorResp("generating refresh token", err)
+		}
+
 		return c.JSON(RefreshTokenResponse{
 			AccessToken: newToken,
+			RefreshToekn: newRefresh,
 		})
 	}
 }
