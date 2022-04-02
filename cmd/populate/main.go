@@ -1,17 +1,17 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
-	"net/http"
-	"strings"
-	"os"
-	log "github.com/sirupsen/logrus"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
-	"github.com/nicjohnson145/mixer-service/pkg/jwt"
 	"github.com/nicjohnson145/mixer-service/pkg/drink"
-	"encoding/json"
+	"github.com/nicjohnson145/mixer-service/pkg/jwt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
+	"net/http"
+	"os"
+	"strings"
 )
 
 type OldDrink struct {
@@ -32,9 +32,9 @@ const (
 )
 
 var (
-	url string
+	url      string
 	username string
-	input string
+	input    string
 )
 
 func init() {
@@ -74,12 +74,12 @@ func parseAndConvertOldJson() []drink.CreateDrinkRequest {
 			requests,
 			drink.CreateDrinkRequest{
 				DrinkData: drink.DrinkData{
-					Name: d.Name,
+					Name:           d.Name,
 					PrimaryAlcohol: d.PrimaryAlchol,
 					PreferredGlass: d.PreferredGlass,
-					Ingredients: d.Ingredients,
-					Instructions: d.Instructions,
-					Publicity: drink.DrinkPublicityPublic,
+					Ingredients:    d.Ingredients,
+					Instructions:   d.Instructions,
+					Publicity:      drink.DrinkPublicityPublic,
 				},
 			},
 		)
@@ -96,7 +96,7 @@ func getAuthToken() string {
 	bodyBytes, err := json.Marshal(body)
 	check(err)
 	c := &http.Client{}
-	req, err := http.NewRequest("POST", url + common.AuthV1 + "/login", strings.NewReader(string(bodyBytes)))
+	req, err := http.NewRequest("POST", url+common.AuthV1+"/login", strings.NewReader(string(bodyBytes)))
 	check(err)
 	req.Header.Add("Content-type", "application/json")
 	resp, err := c.Do(req)
@@ -117,7 +117,7 @@ func getAuthToken() string {
 func createDrink(c *http.Client, token string, r drink.CreateDrinkRequest) {
 	bodyBytes, err := json.Marshal(r)
 	check(err)
-	req, err := http.NewRequest("POST", url + common.DrinksV1 + "/create", strings.NewReader(string(bodyBytes)))
+	req, err := http.NewRequest("POST", url+common.DrinksV1+"/create", strings.NewReader(string(bodyBytes)))
 	check(err)
 	req.Header.Add(jwt.AuthenticationHeader, token)
 	req.Header.Add("Content-type", "application/json")
