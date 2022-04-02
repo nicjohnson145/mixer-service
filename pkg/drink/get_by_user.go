@@ -6,6 +6,7 @@ import (
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"github.com/nicjohnson145/mixer-service/pkg/jwt"
+	"sort"
 )
 
 type GetDrinksByUserResponse struct {
@@ -37,6 +38,10 @@ func getDrinksByUser(db *sql.DB) auth.FiberClaimsHandler {
 			}
 			drinks = append(drinks, d)
 		}
+
+		sort.Slice(drinks, func(i, j int) bool {
+			return drinks[i].Name < drinks[i].Name
+		})
 
 		return c.JSON(GetDrinksByUserResponse{
 			Success: true,

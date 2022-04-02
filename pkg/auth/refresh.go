@@ -7,7 +7,7 @@ import (
 )
 
 type RefreshTokenResponse struct {
-	AccessToken string `json:"access_token"`
+	AccessToken  string `json:"access_token"`
 	RefreshToekn string `json:"refresh_token"`
 }
 
@@ -24,7 +24,7 @@ func refresh() FiberClaimsHandler {
 		}
 
 		return c.JSON(RefreshTokenResponse{
-			AccessToken: newToken,
+			AccessToken:  newToken,
 			RefreshToekn: newRefresh,
 		})
 	}
