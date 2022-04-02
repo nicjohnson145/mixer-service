@@ -15,7 +15,6 @@ type ChangePasswordResponse struct {
 	Success bool `json:"success"`
 }
 
-
 func changePassword(db *sql.DB) FiberClaimsHandler {
 	return func(c *fiber.Ctx, claims jwt.Claims) error {
 		payload := new(ChangePasswordRequest)
