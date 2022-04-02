@@ -124,7 +124,7 @@ func TestFullCRUDLoop(t *testing.T) {
 	app, cleanup := setupDbAndApp(t)
 	defer cleanup()
 
-	origDrinkData := drinkData{
+	origDrinkData := DrinkData{
 		Name:           "Daquari",
 		PrimaryAlcohol: "Rum",
 		PreferredGlass: "Coupe",
@@ -135,7 +135,7 @@ func TestFullCRUDLoop(t *testing.T) {
 		},
 		Publicity: DrinkPublicityPrivate,
 	}
-	updatedDrinkData := drinkData{
+	updatedDrinkData := DrinkData{
 		Name:           "Daquari",
 		PrimaryAlcohol: "Rum",
 		PreferredGlass: "Coupe",
@@ -147,7 +147,7 @@ func TestFullCRUDLoop(t *testing.T) {
 		Publicity: DrinkPublicityPrivate,
 	}
 
-	body := CreateDrinkRequest{drinkData: origDrinkData}
+	body := CreateDrinkRequest{DrinkData: origDrinkData}
 
 	// Creating a drink
 	_, createResp := t_createDrink_ok(t, app, body, commontest.AuthOpts{Username: to.StringPtr("user1")})
@@ -158,7 +158,7 @@ func TestFullCRUDLoop(t *testing.T) {
 		Drink: &Drink{
 			ID:        1,
 			Username:  "user1",
-			drinkData: origDrinkData,
+			DrinkData: origDrinkData,
 		},
 	}
 	require.Equal(t, expectedGetResp, getResp)
@@ -168,7 +168,7 @@ func TestFullCRUDLoop(t *testing.T) {
 
 	// Update it
 	updateReq := UpdateDrinkRequest{
-		drinkData: updatedDrinkData,
+		DrinkData: updatedDrinkData,
 	}
 	// Updating as someone else should not work
 	_, _ = t_updateDrink_fail(t, app, createResp.ID, updateReq, commontest.AuthOpts{Username: to.StringPtr("user2")})
@@ -178,7 +178,7 @@ func TestFullCRUDLoop(t *testing.T) {
 		Drink: &Drink{
 			ID:        1,
 			Username:  "user1",
-			drinkData: origDrinkData,
+			DrinkData: origDrinkData,
 		},
 	}
 	require.Equal(t, expectedGetResp, getResp)
@@ -190,7 +190,7 @@ func TestFullCRUDLoop(t *testing.T) {
 		Drink: &Drink{
 			ID:        1,
 			Username:  "user1",
-			drinkData: updatedDrinkData,
+			DrinkData: updatedDrinkData,
 		},
 	}
 	require.Equal(t, expectedGetResp, getResp)
@@ -202,7 +202,7 @@ func TestFullCRUDLoop(t *testing.T) {
 		Drink: &Drink{
 			ID:        1,
 			Username:  "user1",
-			drinkData: updatedDrinkData,
+			DrinkData: updatedDrinkData,
 		},
 	}
 	require.Equal(t, expectedGetResp, getResp)
@@ -216,7 +216,7 @@ func TestPublicDrinksFetchableByAnyone(t *testing.T) {
 	app, cleanup := setupDbAndApp(t)
 	defer cleanup()
 
-	drinkData := drinkData{
+	drinkData := DrinkData{
 		Name:           "Daquari",
 		PrimaryAlcohol: "Rum",
 		PreferredGlass: "Coupe",
@@ -228,7 +228,7 @@ func TestPublicDrinksFetchableByAnyone(t *testing.T) {
 		Publicity: DrinkPublicityPublic,
 	}
 
-	body := CreateDrinkRequest{drinkData: drinkData}
+	body := CreateDrinkRequest{DrinkData: drinkData}
 
 	// Creating a drink
 	_, createResp := t_createDrink_ok(t, app, body, commontest.AuthOpts{Username: to.StringPtr("user1")})
@@ -239,7 +239,7 @@ func TestPublicDrinksFetchableByAnyone(t *testing.T) {
 		Drink: &Drink{
 			ID:        1,
 			Username:  "user1",
-			drinkData: drinkData,
+			DrinkData: drinkData,
 		},
 	}
 	require.Equal(t, expectedGetResp, getResp)
@@ -249,7 +249,7 @@ func TestGetDrinksByUser(t *testing.T) {
 	app, cleanup := setupDbAndApp(t)
 	defer cleanup()
 
-	first := drinkData{
+	first := DrinkData{
 		Name:           "Daquari",
 		PrimaryAlcohol: "Rum",
 		PreferredGlass: "Coupe",
@@ -260,7 +260,7 @@ func TestGetDrinksByUser(t *testing.T) {
 		},
 		Publicity: DrinkPublicityPublic,
 	}
-	second := drinkData{
+	second := DrinkData{
 		Name:           "Bee's Knees",
 		PrimaryAlcohol: "Gin",
 		PreferredGlass: "Coupe",
@@ -271,7 +271,7 @@ func TestGetDrinksByUser(t *testing.T) {
 		},
 		Publicity: DrinkPublicityPublic,
 	}
-	third := drinkData{
+	third := DrinkData{
 		Name:           "Secret Drink",
 		PrimaryAlcohol: "Scotch",
 		PreferredGlass: "Rocks",
@@ -281,9 +281,9 @@ func TestGetDrinksByUser(t *testing.T) {
 		Publicity: DrinkPublicityPrivate,
 	}
 
-	drinks := []drinkData{first, second, third}
+	drinks := []DrinkData{first, second, third}
 	for _, d := range drinks {
-		_, _ = t_createDrink_ok(t, app, CreateDrinkRequest{drinkData: d}, commontest.AuthOpts{Username: to.StringPtr("user1")})
+		_, _ = t_createDrink_ok(t, app, CreateDrinkRequest{DrinkData: d}, commontest.AuthOpts{Username: to.StringPtr("user1")})
 	}
 
 	// Fetching as user1 should result in all drinks
@@ -294,17 +294,17 @@ func TestGetDrinksByUser(t *testing.T) {
 			{
 				ID:        1,
 				Username:  "user1",
-				drinkData: first,
+				DrinkData: first,
 			},
 			{
 				ID:        2,
 				Username:  "user1",
-				drinkData: second,
+				DrinkData: second,
 			},
 			{
 				ID:        3,
 				Username:  "user1",
-				drinkData: third,
+				DrinkData: third,
 			},
 		},
 	}
@@ -318,12 +318,12 @@ func TestGetDrinksByUser(t *testing.T) {
 			{
 				ID:        1,
 				Username:  "user1",
-				drinkData: first,
+				DrinkData: first,
 			},
 			{
 				ID:        2,
 				Username:  "user1",
-				drinkData: second,
+				DrinkData: second,
 			},
 		},
 	}

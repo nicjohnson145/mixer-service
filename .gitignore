@@ -19,3 +19,5 @@
 
 # Ignore server binary
 cmd/mixer-server/mixer-server
+# Ignore migration binary
+cmd/populate/populate

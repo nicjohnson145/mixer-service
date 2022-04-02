@@ -1,6 +1,6 @@
 package drink
 
-type drinkData struct {
+type DrinkData struct {
 	Name           string   `json:"name" validate:"required"`
 	PrimaryAlcohol string   `json:"primary_alcohol" validate:"required"`
 	PreferredGlass string   `json:"preferred_glass,omitempty"`
@@ -10,59 +10,59 @@ type drinkData struct {
 	Publicity      string   `json:"publicity" validate:"required"`
 }
 
-func (d *drinkData) SetName(v string) {
+func (d *DrinkData) SetName(v string) {
 	d.Name = v
 }
 
-func (d drinkData) GetName() string {
+func (d DrinkData) GetName() string {
 	return d.Name
 }
 
-func (d *drinkData) SetPrimaryAlcohol(v string) {
+func (d *DrinkData) SetPrimaryAlcohol(v string) {
 	d.PrimaryAlcohol = v
 }
 
-func (d drinkData) GetPrimaryAlcohol() string {
+func (d DrinkData) GetPrimaryAlcohol() string {
 	return d.PrimaryAlcohol
 }
 
-func (d *drinkData) SetPreferredGlass(v string) {
+func (d *DrinkData) SetPreferredGlass(v string) {
 	d.PreferredGlass = v
 }
 
-func (d drinkData) GetPreferredGlass() string {
+func (d DrinkData) GetPreferredGlass() string {
 	return d.PreferredGlass
 }
 
-func (d *drinkData) SetIngredients(v []string) {
+func (d *DrinkData) SetIngredients(v []string) {
 	d.Ingredients = v
 }
 
-func (d drinkData) GetIngredients() []string {
+func (d DrinkData) GetIngredients() []string {
 	return d.Ingredients
 }
 
-func (d *drinkData) SetInstructions(v string) {
+func (d *DrinkData) SetInstructions(v string) {
 	d.Instructions = v
 }
 
-func (d drinkData) GetInstructions() string {
+func (d DrinkData) GetInstructions() string {
 	return d.Instructions
 }
 
-func (d *drinkData) SetNotes(v string) {
+func (d *DrinkData) SetNotes(v string) {
 	d.Notes = v
 }
 
-func (d drinkData) GetNotes() string {
+func (d DrinkData) GetNotes() string {
 	return d.Notes
 }
 
-func (d *drinkData) SetPublicity(v string) {
+func (d *DrinkData) SetPublicity(v string) {
 	d.Publicity = v
 }
 
-func (d drinkData) GetPublicity() string {
+func (d DrinkData) GetPublicity() string {
 	return d.Publicity
 }
 

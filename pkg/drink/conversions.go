@@ -15,7 +15,7 @@ func fromDb(d Model) (Drink, error) {
 	return Drink{
 		ID:       d.ID,
 		Username: d.Username,
-		drinkData: drinkData{
+		DrinkData: DrinkData{
 			Name:           d.Name,
 			PrimaryAlcohol: d.PrimaryAlcohol,
 			PreferredGlass: d.PreferredGlass,

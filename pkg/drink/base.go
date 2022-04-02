@@ -16,7 +16,7 @@ const (
 type Drink struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username" validate:"required"`
-	drinkData
+	DrinkData
 }
 
 var validate = validator.New()

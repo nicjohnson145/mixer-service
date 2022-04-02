@@ -11,7 +11,7 @@ import (
 )
 
 type UpdateDrinkRequest struct {
-	drinkData
+	DrinkData
 }
 
 type UpdateDrinkResponse struct {
