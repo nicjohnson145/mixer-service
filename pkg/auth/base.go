@@ -30,6 +30,7 @@ func defineRoutes(app *fiber.App, db *sql.DB) {
 	}
 	app.Post(common.AuthV1+"/login", login(db))
 	app.Post(common.AuthV1+"/refresh", requiresValidRefreshToken(refresh()))
+	app.Post(common.AuthV1+"/change-password", RequiresValidAccessToken(changePassword(db)))
 }
 
 func hashPassword(pw string) (string, error) {

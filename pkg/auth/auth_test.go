@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"testing"
 	"time"
 )
@@ -18,50 +17,45 @@ func setupDbAndRouter(t *testing.T) (*fiber.App, func()) {
 	return commontest.SetupDbAndRouter(t, "auth.db", defineRoutes)
 }
 
-func t_registerUser(t *testing.T, app *fiber.App, req RegisterNewUserRequest) {
-	body, err := json.Marshal(req)
-	require.NoError(t, err)
-
-	registerReq, err := http.NewRequest("POST", common.AuthV1+"/register-user", strings.NewReader(string(body)))
-	commontest.SetJsonHeader(registerReq)
-	require.NoError(t, err)
-
-	resp, err := app.Test(registerReq)
-	require.Equal(t, http.StatusOK, resp.StatusCode)
+func t_registerUser(t *testing.T, app *fiber.App, r RegisterNewUserRequest) (int, RegisterNewUserResponse) {
+	t.Helper()
+	req := commontest.T_req(t, commontest.Req[RegisterNewUserRequest]{
+		Method: http.MethodPost,
+		Path:   common.AuthV1 + "/register-user",
+		Body:   &r,
+	})
+	return commontest.T_call_ok[RegisterNewUserResponse](t, app, req)
 }
 
-func t_login(t *testing.T, app *fiber.App, req LoginRequest) *http.Response {
-	body, err := json.Marshal(req)
-	require.NoError(t, err)
-	loginReq, err := http.NewRequest("POST", common.AuthV1+"/login", strings.NewReader(string(body)))
-	require.NoError(t, err)
-	commontest.SetJsonHeader(loginReq)
-	resp, err := app.Test(loginReq)
-	require.NoError(t, err)
-
-	return resp
+func t_login_ok(t *testing.T, app *fiber.App, r LoginRequest) (int, LoginResponse) {
+	t.Helper()
+	req := commontest.T_req(t, commontest.Req[LoginRequest]{
+		Method: http.MethodPost,
+		Path:   common.AuthV1 + "/login",
+		Body:   &r,
+	})
+	return commontest.T_call_ok[LoginResponse](t, app, req)
 }
 
-func t_login_ok(t *testing.T, app *fiber.App, req LoginRequest) (int, LoginResponse) {
-	resp := t_login(t, app, req)
-	commontest.RequireOkStatus(t, resp)
-
-	var r LoginResponse
-	defer resp.Body.Close()
-	err := json.NewDecoder(resp.Body).Decode(&r)
-	require.NoError(t, err)
-	return resp.StatusCode, r
+func t_login_fail(t *testing.T, app *fiber.App, r LoginRequest) (int, common.OutboundErrResponse) {
+	t.Helper()
+	req := commontest.T_req(t, commontest.Req[LoginRequest]{
+		Method: http.MethodPost,
+		Path:   common.AuthV1 + "/login",
+		Body:   &r,
+	})
+	return commontest.T_call_fail(t, app, req)
 }
 
-func t_login_fail(t *testing.T, app *fiber.App, req LoginRequest) (int, common.OutboundErrResponse) {
-	resp := t_login(t, app, req)
-	commontest.RequireNotOkStatus(t, resp)
-
-	var r common.OutboundErrResponse
-	defer resp.Body.Close()
-	err := json.NewDecoder(resp.Body).Decode(&r)
-	require.NoError(t, err)
-	return resp.StatusCode, r
+func t_changePassword_ok(t *testing.T, app *fiber.App, r ChangePasswordRequest, o commontest.AuthOpts) (int, ChangePasswordResponse) {
+	t.Helper()
+	req := commontest.T_req(t, commontest.Req[ChangePasswordRequest]{
+		Method: http.MethodPost,
+		Path:   common.AuthV1 + "/change-password",
+		Auth:   &o,
+		Body:   &r,
+	})
+	return commontest.T_call_ok[ChangePasswordResponse](t, app, req)
 }
 
 func TestRegisterLogin(t *testing.T) {
@@ -201,4 +195,25 @@ func TestRefresh(t *testing.T) {
 
 	// Should be able to use the new token to hit the protected route
 	validProtectedRoute(t, app, refreshResponse.AccessToken)
+}
+
+func TestChangePassword(t *testing.T) {
+	app, cleanup := setupDbAndRouter(t)
+	defer cleanup()
+
+	// Register some new users
+	t_registerUser(t, app, RegisterNewUserRequest{Username: "foo", Password: "bar"})
+	t_registerUser(t, app, RegisterNewUserRequest{Username: "bar", Password: "baz"})
+
+	// Login as each
+	_, _ = t_login_ok(t, app, LoginRequest{Username: "foo", Password: "bar"})
+	_, _ = t_login_ok(t, app, LoginRequest{Username: "bar", Password: "baz"})
+
+	// Change foo's password
+	t_changePassword_ok(t, app, ChangePasswordRequest{NewPassword: "barbar"}, commontest.AuthOpts{Username: commontest.Ptr("foo")})
+
+	// Ensure logins are still kosher
+	_, _ = t_login_ok(t, app, LoginRequest{Username: "foo", Password: "barbar"})
+	_, _ = t_login_fail(t, app, LoginRequest{Username: "foo", Password: "bar"})
+	_, _ = t_login_ok(t, app, LoginRequest{Username: "bar", Password: "baz"})
 }

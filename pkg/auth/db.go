@@ -48,3 +48,11 @@ func createUser(user UserModel, db *sql.DB) error {
 	_, err := db.Exec(sql, args...)
 	return err
 }
+
+func updatePassword(user UserModel, db *sql.DB) error {
+	ub := UserModelStruct.Update(UserTable, user)
+	ub.Where(ub.Equal("username", user.Username))
+	sql, args := ub.Build()
+	_, err := db.Exec(sql, args...)
+	return err
+}
