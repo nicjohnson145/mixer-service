@@ -3,6 +3,7 @@ package commontest
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -44,12 +45,20 @@ func SetJsonHeader(r *http.Request) {
 
 func RequireOkStatus(t *testing.T, resp *http.Response) {
 	t.Helper()
-	require.True(t, resp.StatusCode >= 200 && resp.StatusCode <= 299)
+	require.True(
+		t,
+		resp.StatusCode >= 200 && resp.StatusCode <= 299,
+		fmt.Sprintf("%v not between 200 & 299", resp.StatusCode),
+	)
 }
 
 func RequireNotOkStatus(t *testing.T, resp *http.Response) {
 	t.Helper()
-	require.False(t, resp.StatusCode >= 200 && resp.StatusCode <= 299)
+	require.False(
+		t,
+		resp.StatusCode >= 200 && resp.StatusCode <= 299,
+		fmt.Sprintf("%v between 200 & 299", resp.StatusCode),
+	)
 }
 
 type Req[T any] struct {
@@ -132,4 +141,8 @@ func AuthenticatedRequest(t *testing.T, r *http.Request, opts AuthOpts) {
 	require.NoError(t, err)
 
 	r.Header.Set(jwt.AuthenticationHeader, token)
+}
+
+func Ptr[T any](val T) *T {
+	return &val
 }

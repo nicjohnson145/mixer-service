@@ -64,6 +64,17 @@ func t_login_fail(t *testing.T, app *fiber.App, req LoginRequest) (int, common.O
 	return resp.StatusCode, r
 }
 
+func t_changePassword_ok(t *testing.T, app *fiber.App, r ChangePasswordRequest, o commontest.AuthOpts) (int, ChangePasswordResponse) {
+	t.Helper()
+	req := commontest.T_req(t, commontest.Req[ChangePasswordRequest]{
+		Method: http.MethodPost,
+		Path:   common.AuthV1 + "/change-password",
+		Auth:   &o,
+		Body:   &r,
+	})
+	return commontest.T_call_ok[ChangePasswordResponse](t, app, req)
+}
+
 func TestRegisterLogin(t *testing.T) {
 	loginData := []struct {
 		name          string
@@ -201,4 +212,25 @@ func TestRefresh(t *testing.T) {
 
 	// Should be able to use the new token to hit the protected route
 	validProtectedRoute(t, app, refreshResponse.AccessToken)
+}
+
+func TestChangePassword(t *testing.T) {
+	app, cleanup := setupDbAndRouter(t)
+	defer cleanup()
+
+	// Register some new users
+	t_registerUser(t, app, RegisterNewUserRequest{Username: "foo", Password: "bar"})
+	t_registerUser(t, app, RegisterNewUserRequest{Username: "bar", Password: "baz"})
+
+	// Login as each
+	_, _ = t_login_ok(t, app, LoginRequest{Username: "foo", Password: "bar"})
+	_, _ = t_login_ok(t, app, LoginRequest{Username: "bar", Password: "baz"})
+
+	// Change foo's password
+	t_changePassword_ok(t, app, ChangePasswordRequest{NewPassword: "barbar"}, commontest.AuthOpts{Username: commontest.Ptr("foo")})
+
+	// Ensure logins are still kosher
+	_, _ = t_login_ok(t, app, LoginRequest{Username: "foo", Password: "barbar"})
+	_, _ = t_login_fail(t, app, LoginRequest{Username: "foo", Password: "bar"})
+	_, _ = t_login_ok(t, app, LoginRequest{Username: "bar", Password: "baz"})
 }
