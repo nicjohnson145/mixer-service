@@ -70,6 +70,18 @@ func createMigrations() *migrate.MemoryMigrationSource {
 					`,
 				},
 			},
+			{
+				Id: nextId(),
+				Up: []string{`
+					CREATE TABLE user_setting (
+						username TEXT NOT NULL,
+						key TEXT NOT NULL,
+						value TEXT NOT NULL,
+						UNIQUE(username, key)
+					);
+				`},
+				Down: []string{"DROP TABLE user_setting;"},
+			},
 			//{
 			//    Id: nextId(),
 			//    Up: []string{},
