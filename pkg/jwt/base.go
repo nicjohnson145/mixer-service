@@ -63,9 +63,10 @@ func lookupDefaultedDuration(key string, defaultDuration time.Duration) time.Dur
 		if err != nil {
 			log.Fatal(fmt.Sprintf("error parsing %v: %v", key, err))
 		}
+		log.Infof("%v set to %v", key, d)
 		return d
 	} else {
-		log.Info(fmt.Sprintf("Using default %v of %v", key, defaultDuration))
+		log.Infof("Using default %v of %v", key, defaultDuration)
 		return defaultDuration
 	}
 }
