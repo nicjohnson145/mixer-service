@@ -16,10 +16,11 @@ type HttpHandler func(http.ResponseWriter, *http.Request)
 type FiberHandler func(*fiber.Ctx) error
 
 const (
-	ApiV1    = "/api/v1"
-	AuthV1   = ApiV1 + "/auth"
-	DrinksV1 = ApiV1 + "/drinks"
-	HealthV1 = ApiV1 + "/health"
+	ApiV1      = "/api/v1"
+	AuthV1     = ApiV1 + "/auth"
+	DrinksV1   = ApiV1 + "/drinks"
+	HealthV1   = ApiV1 + "/health"
+	SettingsV1 = ApiV1 + "/settings"
 )
 
 func NewApp() *fiber.App {
