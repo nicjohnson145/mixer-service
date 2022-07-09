@@ -6,6 +6,7 @@ import (
 	"github.com/nicjohnson145/mixer-service/pkg/db"
 	"github.com/nicjohnson145/mixer-service/pkg/drink"
 	"github.com/nicjohnson145/mixer-service/pkg/health"
+	"github.com/nicjohnson145/mixer-service/pkg/settings"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -24,6 +25,10 @@ func main() {
 
 	if err := health.Init(app, db); err != nil {
 		log.Fatal(err)
+	}
+
+	if err := settings.Init(app, db); err != nil {
+		log.Fatal(err);
 	}
 
 	port := common.DefaultedEnvVar("PORT", "30000")

@@ -1,6 +1,5 @@
 # Binaries for programs and plugins
-*.exe
-*.exe~
+*.exe *.exe~
 *.dll
 *.so
 *.dylib
@@ -21,3 +20,6 @@
 cmd/mixer-server/mixer-server
 # Ignore migration binary
 cmd/populate/populate
+
+# Ignore python version file for testing helper
+.python-version
