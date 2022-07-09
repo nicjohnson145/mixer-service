@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func newDB(t *testing.T, name string) (*sql.DB, func()) {
+func NewDB(t *testing.T, name string) (*sql.DB, func()) {
 	db, err := db.NewDB(name)
 	require.NoError(t, err)
 
@@ -33,7 +33,7 @@ func newDB(t *testing.T, name string) (*sql.DB, func()) {
 }
 
 func SetupDbAndRouter(t *testing.T, name string, routeFunc func(*fiber.App, *sql.DB)) (*fiber.App, func()) {
-	db, cleanup := newDB(t, name)
+	db, cleanup := NewDB(t, name)
 	app := common.NewApp()
 	routeFunc(app, db)
 	return app, cleanup

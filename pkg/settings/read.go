@@ -23,7 +23,7 @@ func getUserSettings(db *sql.DB) auth.FiberClaimsHandler {
 
 		settings := UserSettings{}
 
-		if val, ok := kvs[publicProfile]; ok {
+		if val, ok := kvs[PublicProfile]; ok {
 			settings.PublicProfile = val == "true"
 		} else {
 			settings.PublicProfile = defaultPublicProfile
