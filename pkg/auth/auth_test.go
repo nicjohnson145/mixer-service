@@ -17,46 +17,6 @@ func setupDbAndRouter(t *testing.T) (*fiber.App, func()) {
 	return commontest.SetupDbAndRouter(t, "auth.db", defineRoutes)
 }
 
-func t_registerUser(t *testing.T, app *fiber.App, r RegisterNewUserRequest) (int, RegisterNewUserResponse) {
-	t.Helper()
-	req := commontest.T_req(t, commontest.Req[RegisterNewUserRequest]{
-		Method: http.MethodPost,
-		Path:   common.AuthV1 + "/register-user",
-		Body:   &r,
-	})
-	return commontest.T_call_ok[RegisterNewUserResponse](t, app, req)
-}
-
-func t_login_ok(t *testing.T, app *fiber.App, r LoginRequest) (int, LoginResponse) {
-	t.Helper()
-	req := commontest.T_req(t, commontest.Req[LoginRequest]{
-		Method: http.MethodPost,
-		Path:   common.AuthV1 + "/login",
-		Body:   &r,
-	})
-	return commontest.T_call_ok[LoginResponse](t, app, req)
-}
-
-func t_login_fail(t *testing.T, app *fiber.App, r LoginRequest) (int, common.OutboundErrResponse) {
-	t.Helper()
-	req := commontest.T_req(t, commontest.Req[LoginRequest]{
-		Method: http.MethodPost,
-		Path:   common.AuthV1 + "/login",
-		Body:   &r,
-	})
-	return commontest.T_call_fail(t, app, req)
-}
-
-func t_changePassword_ok(t *testing.T, app *fiber.App, r ChangePasswordRequest, o commontest.AuthOpts) (int, ChangePasswordResponse) {
-	t.Helper()
-	req := commontest.T_req(t, commontest.Req[ChangePasswordRequest]{
-		Method: http.MethodPost,
-		Path:   common.AuthV1 + "/change-password",
-		Auth:   &o,
-		Body:   &r,
-	})
-	return commontest.T_call_ok[ChangePasswordResponse](t, app, req)
-}
 
 func TestRegisterLogin(t *testing.T) {
 	loginData := []struct {
@@ -88,17 +48,17 @@ func TestRegisterLogin(t *testing.T) {
 	app, cleanup := setupDbAndRouter(t)
 	defer cleanup()
 
-	t_registerUser(t, app, RegisterNewUserRequest{Username: "foo", Password: "bar"})
+	T_RegisterUser(t, app, RegisterNewUserRequest{Username: "foo", Password: "bar"})
 
 	for _, tc := range loginData {
 		t.Run("login_cases_"+tc.name, func(t *testing.T) {
 			if tc.expectedToken {
-				status, resp := t_login_ok(t, app, tc.input)
+				status, resp := T_Login_ok(t, app, tc.input)
 				require.Equal(t, tc.expectedCode, status)
 				require.NotEmpty(t, resp.AccessToken)
 				require.NotEmpty(t, resp.RefreshToken)
 			} else {
-				status, _ := t_login_fail(t, app, tc.input)
+				status, _ := T_Login_fail(t, app, tc.input)
 				require.Equal(t, status, tc.expectedCode)
 			}
 		})
@@ -174,10 +134,10 @@ func TestRefresh(t *testing.T) {
 	jwt.SetAccessTokenDuration(time.Duration(1 * time.Second))
 
 	// Register a new user
-	t_registerUser(t, app, RegisterNewUserRequest{Username: username, Password: password})
+	T_RegisterUser(t, app, RegisterNewUserRequest{Username: username, Password: password})
 
 	// Successfully login
-	status, loginResp := t_login_ok(t, app, LoginRequest{Username: username, Password: password})
+	status, loginResp := T_Login_ok(t, app, LoginRequest{Username: username, Password: password})
 	require.Equal(t, http.StatusOK, status)
 
 	// Hit a protected route to prove our token is valid
@@ -202,18 +162,18 @@ func TestChangePassword(t *testing.T) {
 	defer cleanup()
 
 	// Register some new users
-	t_registerUser(t, app, RegisterNewUserRequest{Username: "foo", Password: "bar"})
-	t_registerUser(t, app, RegisterNewUserRequest{Username: "bar", Password: "baz"})
+	T_RegisterUser(t, app, RegisterNewUserRequest{Username: "foo", Password: "bar"})
+	T_RegisterUser(t, app, RegisterNewUserRequest{Username: "bar", Password: "baz"})
 
 	// Login as each
-	_, _ = t_login_ok(t, app, LoginRequest{Username: "foo", Password: "bar"})
-	_, _ = t_login_ok(t, app, LoginRequest{Username: "bar", Password: "baz"})
+	_, _ = T_Login_ok(t, app, LoginRequest{Username: "foo", Password: "bar"})
+	_, _ = T_Login_ok(t, app, LoginRequest{Username: "bar", Password: "baz"})
 
 	// Change foo's password
-	t_changePassword_ok(t, app, ChangePasswordRequest{NewPassword: "barbar"}, commontest.AuthOpts{Username: commontest.Ptr("foo")})
+	T_ChangePassword_ok(t, app, ChangePasswordRequest{NewPassword: "barbar"}, commontest.AuthOpts{Username: commontest.Ptr("foo")})
 
 	// Ensure logins are still kosher
-	_, _ = t_login_ok(t, app, LoginRequest{Username: "foo", Password: "barbar"})
-	_, _ = t_login_fail(t, app, LoginRequest{Username: "foo", Password: "bar"})
-	_, _ = t_login_ok(t, app, LoginRequest{Username: "bar", Password: "baz"})
+	_, _ = T_Login_ok(t, app, LoginRequest{Username: "foo", Password: "barbar"})
+	_, _ = T_Login_fail(t, app, LoginRequest{Username: "foo", Password: "bar"})
+	_, _ = T_Login_ok(t, app, LoginRequest{Username: "bar", Password: "baz"})
 }
