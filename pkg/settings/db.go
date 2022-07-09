@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/huandu/go-sqlbuilder"
-	log "github.com/sirupsen/logrus"
 )
 
 var ModelStruct = sqlbuilder.NewStruct(new(Model))
@@ -35,7 +34,6 @@ func getByUsername(username string, db *sql.DB) (map[string]string, error) {
 
 	var m Model
 	for rows.Next() {
-		log.Info("has rows")
 		err := rows.Scan(ModelStruct.Addr(&m)...)
 		if err != nil {
 			return nil, err
