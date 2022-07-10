@@ -7,6 +7,7 @@ import (
 	"github.com/nicjohnson145/mixer-service/pkg/drink"
 	"github.com/nicjohnson145/mixer-service/pkg/health"
 	"github.com/nicjohnson145/mixer-service/pkg/settings"
+	"github.com/nicjohnson145/mixer-service/pkg/user"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -28,6 +29,10 @@ func main() {
 	}
 
 	if err := settings.Init(app, db); err != nil {
+		log.Fatal(err);
+	}
+
+	if err := user.Init(app, db); err != nil {
 		log.Fatal(err);
 	}
 

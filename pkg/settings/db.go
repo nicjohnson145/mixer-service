@@ -50,7 +50,7 @@ func writeSettingsForUser(db *sql.DB, username string, settings UserSettings) er
 	ib.Cols("username", "key", "value")
 
 	// One rew per setting to persist
-	ib.Values(username, publicProfile, strconv.FormatBool(settings.PublicProfile))
+	ib.Values(username, PublicProfile, strconv.FormatBool(settings.PublicProfile))
 
 	sql, args := ib.Build()
 	_, err := db.Exec(sql, args...)

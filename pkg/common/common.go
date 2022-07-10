@@ -21,6 +21,7 @@ const (
 	DrinksV1   = ApiV1 + "/drinks"
 	HealthV1   = ApiV1 + "/health"
 	SettingsV1 = ApiV1 + "/settings"
+	UserV1     = ApiV1 + "/users"
 )
 
 func NewApp() *fiber.App {
