@@ -2,6 +2,7 @@ package drink
 
 import (
 	"database/sql"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
@@ -32,4 +33,5 @@ func defineRoutes(app *fiber.App, db *sql.DB) {
 	app.Delete(common.DrinksV1+"/:id", auth.RequiresValidAccessToken(deleteDrink(db)))
 	app.Put(common.DrinksV1+"/:id", auth.RequiresValidAccessToken(updateDrink(db)))
 	app.Get(common.DrinksV1+"/by-user/:username", auth.RequiresValidAccessToken(getDrinksByUser(db)))
+	app.Post(common.DrinksV1+"/:id/copy", auth.RequiresValidAccessToken(copyDrink(db)))
 }
