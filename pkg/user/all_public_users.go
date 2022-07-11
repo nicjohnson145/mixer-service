@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
-	"github.com/nicjohnson145/mixer-service/pkg/jwt"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
+	"github.com/nicjohnson145/mixer-service/pkg/jwt"
 )
 
 type GetPublicUsersResponse struct {

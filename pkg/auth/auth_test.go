@@ -17,7 +17,6 @@ func setupDbAndRouter(t *testing.T) (*fiber.App, func()) {
 	return commontest.SetupDbAndRouter(t, "auth.db", defineRoutes)
 }
 
-
 func TestRegisterLogin(t *testing.T) {
 	loginData := []struct {
 		name          string

@@ -43,7 +43,6 @@ func getByUsername(username string, db *sql.DB) (map[string]string, error) {
 	return allSettings, nil
 }
 
-
 func writeSettingsForUser(db *sql.DB, username string, settings UserSettings) error {
 	ib := sqlbuilder.NewInsertBuilder()
 	ib.ReplaceInto(TableName)
