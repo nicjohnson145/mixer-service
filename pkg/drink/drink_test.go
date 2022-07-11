@@ -120,6 +120,25 @@ func t_getDrinksByUser_fail(t *testing.T, app *fiber.App, user string, o commont
 	return commontest.T_call_fail(t, app, req)
 }
 
+func t_copyDrink_ok(t *testing.T, app *fiber.App, id int64, o commontest.AuthOpts) (int, CopyDrinkResponse) {
+	t.Helper()
+	req := commontest.T_req(t, commontest.Req[CopyDrinkResponse]{
+		Method: http.MethodPost,
+		Path:   common.DrinksV1 + fmt.Sprintf("/%v", id) + "/copy",
+		Auth:   &o,
+	})
+	return commontest.T_call_ok[CopyDrinkResponse](t, app, req)
+}
+
+func t_copyDrink_fail(t *testing.T, app *fiber.App, id int64, o commontest.AuthOpts) (int, common.OutboundErrResponse) {
+	t.Helper()
+	req := commontest.T_req(t, commontest.Req[any]{
+		Method: http.MethodPost,
+		Path:   common.DrinksV1 + fmt.Sprintf("/%v", id) + "/copy",
+		Auth:   &o,
+	})
+	return commontest.T_call_fail(t, app, req)
+}
 func TestFullCRUDLoop(t *testing.T) {
 	app, cleanup := setupDbAndApp(t)
 	defer cleanup()
@@ -212,7 +231,7 @@ func TestFullCRUDLoop(t *testing.T) {
 	_, _ = t_getDrink_fail(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user1")})
 }
 
-func TestPublicDrinksFetchableByAnyone(t *testing.T) {
+func TestPublicDrinksFetchableAndCopyableByAnyone(t *testing.T) {
 	app, cleanup := setupDbAndApp(t)
 	defer cleanup()
 
@@ -239,6 +258,20 @@ func TestPublicDrinksFetchableByAnyone(t *testing.T) {
 		Drink: &Drink{
 			ID:        1,
 			Username:  "user1",
+			DrinkData: drinkData,
+		},
+	}
+	require.Equal(t, expectedGetResp, getResp)
+
+	// Copy it as someone else
+	_, copyResp := t_copyDrink_ok(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
+
+	// Get it and it should be the same as the original but with a new owner and id
+	_, getResp = t_getDrink_ok(t, app, copyResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
+	expectedGetResp = GetDrinkResponse{
+		Drink: &Drink{
+			ID:        2,
+			Username:  "user2",
 			DrinkData: drinkData,
 		},
 	}

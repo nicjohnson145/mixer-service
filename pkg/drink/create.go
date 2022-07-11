@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
@@ -29,35 +30,44 @@ func createDrink(db *sql.DB) auth.FiberClaimsHandler {
 			return common.NewBadRequestResponse(err)
 		}
 
-		existingDrink, err := getByNameAndUsername(payload.Name, claims.Username, db)
-		if err != nil && !errors.Is(err, common.ErrNotFound) {
-			return common.NewInternalServerErrorResp("checking existance in DB", err)
-		}
-
-		if existingDrink != nil {
-			return common.ErrorResponse{
-				Msg:    fmt.Sprintf("user %v already has a drink named %v", claims.Username, payload.Name),
-				Err:    fmt.Errorf("exising name/user combination"),
-				Status: fiber.StatusBadRequest,
-			}
-		}
-
-		drink := Drink{}
-		setDrinkDataAttributes(&drink, payload)
-		drink.Username = claims.Username
-
-		model, err := toDb(drink)
+		id, err := createDrinkInternal(db, c, claims, payload.DrinkData)
 		if err != nil {
-			return common.NewInternalServerErrorResp("converting to DB model", err)
-		}
-
-		id, err := create(model, db)
-		if err != nil {
-			return common.NewInternalServerErrorResp("inserting into DB", err)
+			return err
 		}
 
 		return c.JSON(CreateDrinkResponse{
 			ID: id,
 		})
 	}
+}
+
+func createDrinkInternal(db *sql.DB, c *fiber.Ctx, claims jwt.Claims, drinkData DrinkData) (int64, error) {
+	existingDrink, err := getByNameAndUsername(drinkData.Name, claims.Username, db)
+	if err != nil && !errors.Is(err, common.ErrNotFound) {
+		return 0, common.NewInternalServerErrorResp("checking existance in DB", err)
+	}
+
+	if existingDrink != nil {
+		return 0, common.ErrorResponse{
+			Msg:    fmt.Sprintf("user %v already has a drink named %v", claims.Username, drinkData.Name),
+			Err:    fmt.Errorf("exising name/user combination"),
+			Status: fiber.StatusBadRequest,
+		}
+	}
+
+	drink := Drink{}
+	setDrinkDataAttributes(&drink, drinkData)
+	drink.Username = claims.Username
+
+	model, err := toDb(drink)
+	if err != nil {
+		return 0, common.NewInternalServerErrorResp("converting to DB model", err)
+	}
+
+	id, err := create(model, db)
+	if err != nil {
+		return 0, common.NewInternalServerErrorResp("inserting into DB", err)
+	}
+
+	return id, nil
 }

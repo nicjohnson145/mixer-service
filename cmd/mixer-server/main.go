@@ -29,11 +29,11 @@ func main() {
 	}
 
 	if err := settings.Init(app, db); err != nil {
-		log.Fatal(err);
+		log.Fatal(err)
 	}
 
 	if err := user.Init(app, db); err != nil {
-		log.Fatal(err);
+		log.Fatal(err)
 	}
 
 	port := common.DefaultedEnvVar("PORT", "30000")

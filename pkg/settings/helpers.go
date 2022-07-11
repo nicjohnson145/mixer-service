@@ -30,4 +30,3 @@ func T_WriteSettings(t *testing.T, app *fiber.App, b WriteSettingsRequest, o com
 	})
 	return commontest.T_call_ok[WriteSettingsResponse](t, app, req)
 }
-

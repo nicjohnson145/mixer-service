@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/nicjohnson145/mixer-service/pkg/common/commontest"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
+	"github.com/nicjohnson145/mixer-service/pkg/common/commontest"
 	"github.com/nicjohnson145/mixer-service/pkg/settings"
 
 	"github.com/nicjohnson145/mixer-service/pkg/common"
@@ -66,4 +66,3 @@ func TestGetAllPublicUsers(t *testing.T) {
 	sort.Strings(resp.Users)
 	require.Equal(t, []string{"explicitly_public_user", "no_settings_user"}, resp.Users)
 }
-

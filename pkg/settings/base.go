@@ -12,7 +12,7 @@ type UserSettings struct {
 }
 
 const (
-	PublicProfile = "public_profile"
+	PublicProfile        = "public_profile"
 	defaultPublicProfile = true
 )
 
