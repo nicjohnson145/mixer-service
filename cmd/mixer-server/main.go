@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"github.com/nicjohnson145/mixer-service/pkg/db"
@@ -8,11 +9,26 @@ import (
 	"github.com/nicjohnson145/mixer-service/pkg/health"
 	"github.com/nicjohnson145/mixer-service/pkg/settings"
 	"github.com/nicjohnson145/mixer-service/pkg/user"
+	"github.com/nicjohnson145/mixer-service/pkg/slow"
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	slowDown bool
+)
+
+func init() {
+	flag.BoolVar(&slowDown, "slow", false, "Introduce a sleep in every request. Useful for UI testing")
+}
+
 func main() {
+	flag.Parse()
+
 	app := common.NewApp()
+
+	if slowDown {
+		slow.SlowDown(app)
+	}
 
 	db := db.NewDBOrDie(common.DefaultedEnvVar("DB_PATH", "mixer.db"))
 
