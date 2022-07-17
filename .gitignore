@@ -20,6 +20,8 @@
 cmd/mixer-server/mixer-server
 # Ignore migration binary
 cmd/populate/populate
+# Ignore register binary
+cmd/register/register
 
 # Ignore python version file for testing helper
 .python-version
