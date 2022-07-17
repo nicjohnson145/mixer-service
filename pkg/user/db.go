@@ -6,7 +6,7 @@ import (
 	"github.com/nicjohnson145/mixer-service/pkg/settings"
 )
 
-func getPublicUsers(db *sql.DB) ([]string, error) {
+func getPublicUsers(db *sql.DB, user string) ([]string, error) {
 	sb := sqlbuilder.NewSelectBuilder()
 	sb.Select("u.username")
 	sb.From("user u")
@@ -35,7 +35,9 @@ func getPublicUsers(db *sql.DB) ([]string, error) {
 			return []string{}, err
 		}
 
-		users = append(users, username)
+		if username != user {
+			users = append(users, username)
+		}
 	}
 
 	return users, nil

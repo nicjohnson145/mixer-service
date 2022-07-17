@@ -38,6 +38,7 @@ func TestGetAllPublicUsers(t *testing.T) {
 		"explicitly_public_user",
 		"no_settings_user",
 		"explicitly_private_user",
+		"test_user",
 	}
 	for _, name := range allUsers {
 		status, _ := auth.T_RegisterUser(t, app, auth.RegisterNewUserRequest{Username: name, Password: "foo"})

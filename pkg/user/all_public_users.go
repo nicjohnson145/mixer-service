@@ -14,7 +14,7 @@ type GetPublicUsersResponse struct {
 
 func getAllPublicUsers(db *sql.DB) auth.FiberClaimsHandler {
 	return func(c *fiber.Ctx, claims jwt.Claims) error {
-		users, err := getPublicUsers(db)
+		users, err := getPublicUsers(db, claims.Username)
 		if err != nil {
 			return common.NewInternalServerErrorResp("getting list of public users", err)
 		}
