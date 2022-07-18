@@ -19,6 +19,10 @@ func copyDrink(db *sql.DB) auth.FiberClaimsHandler {
 			return err
 		}
 
+		if c.Query("newName") != "" {
+			drink.DrinkData.Name = c.Query("newName")
+		}
+
 		id, err := createDrinkInternal(db, c, claims, drink.DrinkData)
 		if err != nil {
 			return err

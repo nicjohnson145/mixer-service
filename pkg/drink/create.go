@@ -41,17 +41,34 @@ func createDrink(db *sql.DB) auth.FiberClaimsHandler {
 	}
 }
 
+type DrinkAlreadyExistsErrorResponse struct {
+	DrinkId int64
+	User    string
+	Msg     string
+	Err     error
+	Context string
+	Status  int
+}
+
+func (e DrinkAlreadyExistsErrorResponse) Error() string {
+	return e.Err.Error()
+}
+
 func createDrinkInternal(db *sql.DB, c *fiber.Ctx, claims jwt.Claims, drinkData DrinkData) (int64, error) {
 	existingDrink, err := getByNameAndUsername(drinkData.Name, claims.Username, db)
 	if err != nil && !errors.Is(err, common.ErrNotFound) {
 		return 0, common.NewInternalServerErrorResp("checking existance in DB", err)
 	}
 
-	if existingDrink != nil {
-		return 0, common.ErrorResponse{
-			Msg:    fmt.Sprintf("user %v already has a drink named %v", claims.Username, drinkData.Name),
-			Err:    fmt.Errorf("exising name/user combination"),
-			Status: fiber.StatusBadRequest,
+	if c.Query("overwrite") != "true" {
+		if existingDrink != nil {
+			return 0, DrinkAlreadyExistsErrorResponse{
+				DrinkId: existingDrink.ID,
+				User:    claims.Username,
+				Msg:     fmt.Sprintf("user %v already has a drink named %v", claims.Username, drinkData.Name),
+				Err:     fmt.Errorf("exising name/user combination"),
+				Status:  fiber.StatusBadRequest,
+			}
 		}
 	}
 
@@ -64,7 +81,14 @@ func createDrinkInternal(db *sql.DB, c *fiber.Ctx, claims jwt.Claims, drinkData 
 		return 0, common.NewInternalServerErrorResp("converting to DB model", err)
 	}
 
-	id, err := create(model, db)
+	var id int64
+	if existingDrink != nil {
+		model.ID = existingDrink.ID
+		err = updateModel(model, db)
+		id = existingDrink.ID
+	} else {
+		id, err = create(model, db)
+	}
 	if err != nil {
 		return 0, common.NewInternalServerErrorResp("inserting into DB", err)
 	}

@@ -27,6 +27,17 @@ func t_createDrink_ok(t *testing.T, app *fiber.App, r CreateDrinkRequest, o comm
 	return commontest.T_call_ok[CreateDrinkResponse](t, app, req)
 }
 
+func t_createDrinkOverwrite_ok(t *testing.T, app *fiber.App, r CreateDrinkRequest, o commontest.AuthOpts) (int, CreateDrinkResponse) {
+	t.Helper()
+	req := commontest.T_req(t, commontest.Req[CreateDrinkRequest]{
+		Method: http.MethodPost,
+		Path:   common.DrinksV1 + "/create?overwrite=true",
+		Body:   &r,
+		Auth:   &o,
+	})
+	return commontest.T_call_ok[CreateDrinkResponse](t, app, req)
+}
+
 func t_createDrink_fail(t *testing.T, app *fiber.App, r CreateDrinkRequest, o commontest.AuthOpts) (int, common.OutboundErrResponse) {
 	t.Helper()
 	req := commontest.T_req(t, commontest.Req[CreateDrinkRequest]{
@@ -125,6 +136,26 @@ func t_copyDrink_ok(t *testing.T, app *fiber.App, id int64, o commontest.AuthOpt
 	req := commontest.T_req(t, commontest.Req[CopyDrinkResponse]{
 		Method: http.MethodPost,
 		Path:   common.DrinksV1 + fmt.Sprintf("/%v", id) + "/copy",
+		Auth:   &o,
+	})
+	return commontest.T_call_ok[CopyDrinkResponse](t, app, req)
+}
+
+func t_copyDrinkRename_ok(t *testing.T, app *fiber.App, id int64, o commontest.AuthOpts) (int, CopyDrinkResponse) {
+	t.Helper()
+	req := commontest.T_req(t, commontest.Req[CopyDrinkResponse]{
+		Method: http.MethodPost,
+		Path:   common.DrinksV1 + fmt.Sprintf("/%v", id) + "/copy?newName=DrinkCopy",
+		Auth:   &o,
+	})
+	return commontest.T_call_ok[CopyDrinkResponse](t, app, req)
+}
+
+func t_copyDrinkOverwrite_ok(t *testing.T, app *fiber.App, id int64, o commontest.AuthOpts) (int, CopyDrinkResponse) {
+	t.Helper()
+	req := commontest.T_req(t, commontest.Req[CopyDrinkResponse]{
+		Method: http.MethodPost,
+		Path:   common.DrinksV1 + fmt.Sprintf("/%v", id) + "/copy?overwrite=true",
 		Auth:   &o,
 	})
 	return commontest.T_call_ok[CopyDrinkResponse](t, app, req)
@@ -231,6 +262,54 @@ func TestFullCRUDLoop(t *testing.T) {
 	_, _ = t_getDrink_fail(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user1")})
 }
 
+func TestCreateWithOverwriteAndGet(t *testing.T) {
+	app, cleanup := setupDbAndApp(t)
+	defer cleanup()
+
+	origDrinkData := DrinkData{
+		Name:           "Daquiri",
+		PrimaryAlcohol: "Rum",
+		PreferredGlass: "Coupe",
+		Ingredients: []string{
+			"2.5 oz white rum",
+			"0.5 oz simple syrup",
+			"1 oz lime",
+		},
+		Publicity: DrinkPublicityPrivate,
+	}
+	overwriteDrinkData := DrinkData{
+		Name:           "Daquiri",
+		PrimaryAlcohol: "Rum",
+		PreferredGlass: "Coupe",
+		Ingredients: []string{
+			"2.5 oz white rum",
+			"0.5 oz strawberry syrup",
+			"1 oz lime",
+		},
+		Publicity: DrinkPublicityPrivate,
+	}
+	body := CreateDrinkRequest{DrinkData: origDrinkData}
+	overwriteBody := CreateDrinkRequest{DrinkData: overwriteDrinkData}
+
+	// Creating a drink
+	_, createResp := t_createDrink_ok(t, app, body, commontest.AuthOpts{Username: to.StringPtr("user1")})
+	// Create it again with overwrite
+	_, overwriteResp := t_createDrinkOverwrite_ok(t, app, overwriteBody, commontest.AuthOpts{Username: to.StringPtr("user1")})
+
+	require.Equal(t, createResp.ID, overwriteResp.ID)
+
+	// Fetch it and it should be eqwual to the overwritten value
+	_, getResp := t_getDrink_ok(t, app, overwriteResp.ID, commontest.AuthOpts{Username: to.StringPtr("user1")})
+	expectedGetResp := GetDrinkResponse{
+		Drink: &Drink{
+			ID:        1,
+			Username:  "user1",
+			DrinkData: overwriteDrinkData,
+		},
+	}
+	require.Equal(t, expectedGetResp, getResp)
+}
+
 func TestPublicDrinksFetchableAndCopyableByAnyone(t *testing.T) {
 	app, cleanup := setupDbAndApp(t)
 	defer cleanup()
@@ -242,6 +321,18 @@ func TestPublicDrinksFetchableAndCopyableByAnyone(t *testing.T) {
 		Ingredients: []string{
 			"2.5 oz white rum",
 			"0.5 oz simple syrup",
+			"1 oz lime",
+		},
+		Publicity: DrinkPublicityPublic,
+	}
+
+	updatedDrinkData := DrinkData{
+		Name:           "Daquari",
+		PrimaryAlcohol: "Rum",
+		PreferredGlass: "Coupe",
+		Ingredients: []string{
+			"2.5 oz white rum",
+			"0.5 oz strawberry syrup",
 			"1 oz lime",
 		},
 		Publicity: DrinkPublicityPublic,
@@ -271,6 +362,50 @@ func TestPublicDrinksFetchableAndCopyableByAnyone(t *testing.T) {
 	expectedGetResp = GetDrinkResponse{
 		Drink: &Drink{
 			ID:        2,
+			Username:  "user2",
+			DrinkData: drinkData,
+		},
+	}
+	require.Equal(t, expectedGetResp, getResp)
+
+	// update it (so we can copy it again with overwrite)
+	// Update it
+	updateReq := UpdateDrinkRequest{
+		DrinkData: updatedDrinkData,
+	}
+	_, _ = t_updateDrink_ok(t, app, 2, updateReq, commontest.AuthOpts{Username: to.StringPtr("user2")})
+	// Get it and it should be updated
+	_, getResp = t_getDrink_ok(t, app, copyResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
+	expectedGetResp = GetDrinkResponse{
+		Drink: &Drink{
+			ID:        2,
+			Username:  "user2",
+			DrinkData: updatedDrinkData,
+		},
+	}
+	require.Equal(t, expectedGetResp, getResp)
+	// Copy it again with overwrite
+	_, copyResp = t_copyDrinkOverwrite_ok(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
+	// Get it and it should be back to the original
+	_, getResp = t_getDrink_ok(t, app, copyResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
+	expectedGetResp = GetDrinkResponse{
+		Drink: &Drink{
+			ID:        2,
+			Username:  "user2",
+			DrinkData: drinkData,
+		},
+	}
+	require.Equal(t, expectedGetResp, getResp)
+
+	// Copy it again with new name
+	_, copyResp = t_copyDrinkRename_ok(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
+
+	// Get it and it should be the same as the original but with a new name and id
+	_, getResp = t_getDrink_ok(t, app, copyResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
+	drinkData.Name = "DrinkCopy"
+	expectedGetResp = GetDrinkResponse{
+		Drink: &Drink{
+			ID:        3,
 			Username:  "user2",
 			DrinkData: drinkData,
 		},
