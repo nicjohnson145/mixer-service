@@ -59,11 +59,11 @@ func createDrinkInternal(db *sql.DB, c *fiber.Ctx, claims jwt.Claims, drinkData 
 
 	if c.Query("overwrite") != "true" {
 		if existingDrink != nil {
-			return 0, DrinkAlreadyExistsErrorResponse{
+			return 0, common.NewBadRequestResponse(DrinkAlreadyExistsErrorResponse{
 				DrinkId: existingDrink.ID,
 				Msg:     fmt.Sprintf("user %v already has a drink named %v", claims.Username, drinkData.Name),
 				Status:  fiber.StatusBadRequest,
-			}
+			})
 		}
 	}
 
