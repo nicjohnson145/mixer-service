@@ -38,6 +38,17 @@ func t_createDrinkOverwrite_ok(t *testing.T, app *fiber.App, r CreateDrinkReques
 	return commontest.T_call_ok[CreateDrinkResponse](t, app, req)
 }
 
+func t_createDrink_DrinkAlreadyExists(t *testing.T, app *fiber.App, r CreateDrinkRequest, o commontest.AuthOpts) (int, common.OutboundErrResponse) {
+	t.Helper()
+	req := commontest.T_req(t, commontest.Req[CreateDrinkRequest]{
+		Method: http.MethodPost,
+		Path:   common.DrinksV1 + "/create",
+		Body:   &r,
+		Auth:   &o,
+	})
+	return commontest.T_call_fail(t, app, req)
+}
+
 func t_getDrink_ok(t *testing.T, app *fiber.App, id int64, o commontest.AuthOpts) (int, GetDrinkResponse) {
 	t.Helper()
 	req := commontest.T_req(t, commontest.Req[any]{
@@ -148,6 +159,16 @@ func t_copyDrinkOverwrite_ok(t *testing.T, app *fiber.App, id int64, o commontes
 		Auth:   &o,
 	})
 	return commontest.T_call_ok[CopyDrinkResponse](t, app, req)
+}
+
+func t_copyDrink_DrinkAlreadyExists(t *testing.T, app *fiber.App, id int64, o commontest.AuthOpts) (int, common.OutboundErrResponse) {
+	t.Helper()
+	req := commontest.T_req(t, commontest.Req[CopyDrinkResponse]{
+		Method: http.MethodPost,
+		Path:   common.DrinksV1 + fmt.Sprintf("/%v", id) + "/copy",
+		Auth:   &o,
+	})
+	return commontest.T_call_fail(t, app, req)
 }
 
 func TestFullCRUDLoop(t *testing.T) {
@@ -322,6 +343,8 @@ func TestPublicDrinksFetchableAndCopyableByAnyone(t *testing.T) {
 
 	// Creating a drink
 	_, createResp := t_createDrink_ok(t, app, body, commontest.AuthOpts{Username: to.StringPtr("user1")})
+	// Creating exact same drink again should fail
+	_, _ = t_createDrink_DrinkAlreadyExists(t, app, body, commontest.AuthOpts{Username: to.StringPtr("user1")})
 
 	// Fetch it as someone else, it should succeed since it's public
 	_, getResp := t_getDrink_ok(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
@@ -336,6 +359,8 @@ func TestPublicDrinksFetchableAndCopyableByAnyone(t *testing.T) {
 
 	// Copy it as someone else
 	_, copyResp := t_copyDrink_ok(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
+	// Copy again without overwrite or rename should fail
+	_, _ = t_copyDrink_DrinkAlreadyExists(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
 
 	// Get it and it should be the same as the original but with a new owner and id
 	_, getResp = t_getDrink_ok(t, app, copyResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
