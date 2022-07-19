@@ -43,15 +43,12 @@ func createDrink(db *sql.DB) auth.FiberClaimsHandler {
 
 type DrinkAlreadyExistsErrorResponse struct {
 	DrinkId int64
-	User    string
 	Msg     string
-	Err     error
-	Context string
 	Status  int
 }
 
 func (e DrinkAlreadyExistsErrorResponse) Error() string {
-	return e.Err.Error()
+	return e.Msg
 }
 
 func createDrinkInternal(db *sql.DB, c *fiber.Ctx, claims jwt.Claims, drinkData DrinkData) (int64, error) {
@@ -64,9 +61,7 @@ func createDrinkInternal(db *sql.DB, c *fiber.Ctx, claims jwt.Claims, drinkData 
 		if existingDrink != nil {
 			return 0, DrinkAlreadyExistsErrorResponse{
 				DrinkId: existingDrink.ID,
-				User:    claims.Username,
 				Msg:     fmt.Sprintf("user %v already has a drink named %v", claims.Username, drinkData.Name),
-				Err:     fmt.Errorf("exising name/user combination"),
 				Status:  fiber.StatusBadRequest,
 			}
 		}

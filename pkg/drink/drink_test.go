@@ -38,17 +38,6 @@ func t_createDrinkOverwrite_ok(t *testing.T, app *fiber.App, r CreateDrinkReques
 	return commontest.T_call_ok[CreateDrinkResponse](t, app, req)
 }
 
-func t_createDrink_fail(t *testing.T, app *fiber.App, r CreateDrinkRequest, o commontest.AuthOpts) (int, common.OutboundErrResponse) {
-	t.Helper()
-	req := commontest.T_req(t, commontest.Req[CreateDrinkRequest]{
-		Method: http.MethodPost,
-		Path:   common.DrinksV1 + "/create",
-		Body:   &r,
-		Auth:   &o,
-	})
-	return commontest.T_call_fail(t, app, req)
-}
-
 func t_getDrink_ok(t *testing.T, app *fiber.App, id int64, o commontest.AuthOpts) (int, GetDrinkResponse) {
 	t.Helper()
 	req := commontest.T_req(t, commontest.Req[any]{
@@ -161,15 +150,6 @@ func t_copyDrinkOverwrite_ok(t *testing.T, app *fiber.App, id int64, o commontes
 	return commontest.T_call_ok[CopyDrinkResponse](t, app, req)
 }
 
-func t_copyDrink_fail(t *testing.T, app *fiber.App, id int64, o commontest.AuthOpts) (int, common.OutboundErrResponse) {
-	t.Helper()
-	req := commontest.T_req(t, commontest.Req[any]{
-		Method: http.MethodPost,
-		Path:   common.DrinksV1 + fmt.Sprintf("/%v", id) + "/copy",
-		Auth:   &o,
-	})
-	return commontest.T_call_fail(t, app, req)
-}
 func TestFullCRUDLoop(t *testing.T) {
 	app, cleanup := setupDbAndApp(t)
 	defer cleanup()
