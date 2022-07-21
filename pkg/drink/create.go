@@ -41,13 +41,13 @@ func createDrink(db *sql.DB) auth.FiberClaimsHandler {
 	}
 }
 
-type DrinkAlreadyExistsErrorResponse struct {
+type DrinkAlreadyExistsError struct {
 	DrinkId int64
 	Msg     string
 	Status  int
 }
 
-func (e DrinkAlreadyExistsErrorResponse) Error() string {
+func (e DrinkAlreadyExistsError) Error() string {
 	return e.Msg
 }
 
@@ -59,11 +59,17 @@ func createDrinkInternal(db *sql.DB, c *fiber.Ctx, claims jwt.Claims, drinkData 
 
 	if c.Query("overwrite") != "true" {
 		if existingDrink != nil {
-			return 0, common.NewBadRequestResponse(DrinkAlreadyExistsErrorResponse{
+			e := DrinkAlreadyExistsError{
 				DrinkId: existingDrink.ID,
-				Msg:     fmt.Sprintf("user %v already has a drink named %v", claims.Username, drinkData.Name),
+				Msg:     fmt.Sprintf("existing drink named %v", drinkData.Name),
 				Status:  fiber.StatusBadRequest,
-			})
+			}
+			return 0, common.ErrorResponse{
+				Err:     e,
+				Msg:     e.Msg,
+				Context: fmt.Sprintf("User: %v, Existing DrinkId: %d", claims.Username, e.DrinkId),
+				Status:  fiber.StatusConflict,
+			}
 		}
 	}
 

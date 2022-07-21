@@ -344,7 +344,9 @@ func TestPublicDrinksFetchableAndCopyableByAnyone(t *testing.T) {
 	// Creating a drink
 	_, createResp := t_createDrink_ok(t, app, body, commontest.AuthOpts{Username: to.StringPtr("user1")})
 	// Creating exact same drink again should fail
-	_, _ = t_createDrink_DrinkAlreadyExists(t, app, body, commontest.AuthOpts{Username: to.StringPtr("user1")})
+	status, errResp := t_createDrink_DrinkAlreadyExists(t, app, body, commontest.AuthOpts{Username: to.StringPtr("user1")})
+	require.Equal(t, http.StatusConflict, status)
+	require.Equal(t, "existing drink named Daquari", errResp.Error)
 
 	// Fetch it as someone else, it should succeed since it's public
 	_, getResp := t_getDrink_ok(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
@@ -360,7 +362,9 @@ func TestPublicDrinksFetchableAndCopyableByAnyone(t *testing.T) {
 	// Copy it as someone else
 	_, copyResp := t_copyDrink_ok(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
 	// Copy again without overwrite or rename should fail
-	_, _ = t_copyDrink_DrinkAlreadyExists(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
+	status, errResp = t_copyDrink_DrinkAlreadyExists(t, app, createResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
+	require.Equal(t, http.StatusConflict, status)
+	require.Equal(t, "existing drink named Daquari", errResp.Error)
 
 	// Get it and it should be the same as the original but with a new owner and id
 	_, getResp = t_getDrink_ok(t, app, copyResp.ID, commontest.AuthOpts{Username: to.StringPtr("user2")})
