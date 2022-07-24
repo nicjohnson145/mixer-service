@@ -2,11 +2,10 @@ package slow
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"os"
 	log "github.com/sirupsen/logrus"
+	"os"
 	"time"
 )
-
 
 func SlowDown(app *fiber.App) {
 	val, ok := os.LookupEnv("SLOWDOWN_AMOUNT")

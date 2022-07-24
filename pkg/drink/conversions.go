@@ -12,17 +12,23 @@ func fromDb(d Model) (Drink, error) {
 		return Drink{}, err
 	}
 
+	underDevelopment := false
+	if d.UnderDevelopment == 1 {
+		underDevelopment = true
+	}
+
 	return Drink{
 		ID:       d.ID,
 		Username: d.Username,
 		DrinkData: DrinkData{
-			Name:           d.Name,
-			PrimaryAlcohol: d.PrimaryAlcohol,
-			PreferredGlass: d.PreferredGlass,
-			Ingredients:    ingredients,
-			Instructions:   d.Instructions,
-			Notes:          d.Notes,
-			Publicity:      d.Publicity,
+			Name:             d.Name,
+			PrimaryAlcohol:   d.PrimaryAlcohol,
+			PreferredGlass:   d.PreferredGlass,
+			Ingredients:      ingredients,
+			Instructions:     d.Instructions,
+			Notes:            d.Notes,
+			Publicity:        d.Publicity,
+			UnderDevelopment: underDevelopment,
 		},
 	}, nil
 }
@@ -33,16 +39,22 @@ func toDb(d Drink) (Model, error) {
 		return Model{}, err
 	}
 
+	underDevelopment := 0
+	if d.UnderDevelopment {
+		underDevelopment = 1
+	}
+
 	return Model{
-		ID:             d.ID,
-		Name:           d.Name,
-		Username:       d.Username,
-		PrimaryAlcohol: d.PrimaryAlcohol,
-		PreferredGlass: d.PreferredGlass,
-		Ingredients:    ingredients,
-		Instructions:   d.Instructions,
-		Notes:          d.Notes,
-		Publicity:      d.Publicity,
+		ID:               d.ID,
+		Name:             d.Name,
+		Username:         d.Username,
+		PrimaryAlcohol:   d.PrimaryAlcohol,
+		PreferredGlass:   d.PreferredGlass,
+		Ingredients:      ingredients,
+		Instructions:     d.Instructions,
+		Notes:            d.Notes,
+		Publicity:        d.Publicity,
+		UnderDevelopment: underDevelopment,
 	}, nil
 }
 
@@ -70,4 +82,5 @@ func setDrinkDataAttributes(obj DrinkDataSetter, data DrinkDataGetter) {
 	obj.SetInstructions(data.GetInstructions())
 	obj.SetNotes(data.GetNotes())
 	obj.SetPublicity(data.GetPublicity())
+	obj.SetUnderDevelopment(data.GetUnderDevelopment())
 }

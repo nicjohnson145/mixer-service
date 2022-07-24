@@ -14,15 +14,16 @@ const (
 )
 
 type Model struct {
-	ID             int64  `db:"id"`
-	Name           string `db:"name" fieldtag:"required_insert"`
-	Username       string `db:"username" fieldtag:"required_insert"`
-	PrimaryAlcohol string `db:"primary_alcohol" fieldtag:"required_insert"`
-	PreferredGlass string `db:"preferred_glass" fieldtag:"required_insert"`
-	Ingredients    string `db:"ingredients" fieldtag:"required_insert"`
-	Instructions   string `db:"instructions" fieldtag:"required_insert"`
-	Notes          string `db:"notes" fieldtag:"required_insert"`
-	Publicity      string `db:"publicity" fieldtag:"required_insert"`
+	ID               int64  `db:"id"`
+	Name             string `db:"name" fieldtag:"required_insert"`
+	Username         string `db:"username" fieldtag:"required_insert"`
+	PrimaryAlcohol   string `db:"primary_alcohol" fieldtag:"required_insert"`
+	PreferredGlass   string `db:"preferred_glass" fieldtag:"required_insert"`
+	Ingredients      string `db:"ingredients" fieldtag:"required_insert"`
+	Instructions     string `db:"instructions" fieldtag:"required_insert"`
+	Notes            string `db:"notes" fieldtag:"required_insert"`
+	Publicity        string `db:"publicity" fieldtag:"required_insert"`
+	UnderDevelopment int    `db:"under_development" fieldtag:"required_insert"`
 }
 
 func getByID(id int64, db *sql.DB) (*Model, error) {
