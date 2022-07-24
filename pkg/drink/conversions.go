@@ -21,14 +21,14 @@ func fromDb(d Model) (Drink, error) {
 		ID:       d.ID,
 		Username: d.Username,
 		DrinkData: DrinkData{
-			Name:           d.Name,
-			PrimaryAlcohol: d.PrimaryAlcohol,
-			PreferredGlass: d.PreferredGlass,
-			Ingredients:    ingredients,
-			Instructions:   d.Instructions,
-			Notes:          d.Notes,
-			Publicity:      d.Publicity,
-			UnderDevelopment:    underDevelopment,
+			Name:             d.Name,
+			PrimaryAlcohol:   d.PrimaryAlcohol,
+			PreferredGlass:   d.PreferredGlass,
+			Ingredients:      ingredients,
+			Instructions:     d.Instructions,
+			Notes:            d.Notes,
+			Publicity:        d.Publicity,
+			UnderDevelopment: underDevelopment,
 		},
 	}, nil
 }
@@ -45,16 +45,16 @@ func toDb(d Drink) (Model, error) {
 	}
 
 	return Model{
-		ID:             d.ID,
-		Name:           d.Name,
-		Username:       d.Username,
-		PrimaryAlcohol: d.PrimaryAlcohol,
-		PreferredGlass: d.PreferredGlass,
-		Ingredients:    ingredients,
-		Instructions:   d.Instructions,
-		Notes:          d.Notes,
-		Publicity:      d.Publicity,
-		UnderDevelopment:    underDevelopment,
+		ID:               d.ID,
+		Name:             d.Name,
+		Username:         d.Username,
+		PrimaryAlcohol:   d.PrimaryAlcohol,
+		PreferredGlass:   d.PreferredGlass,
+		Ingredients:      ingredients,
+		Instructions:     d.Instructions,
+		Notes:            d.Notes,
+		Publicity:        d.Publicity,
+		UnderDevelopment: underDevelopment,
 	}, nil
 }
 

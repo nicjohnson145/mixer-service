@@ -1,21 +1,21 @@
 package main
 
 import (
+	"context"
 	"flag"
-	"os"
 	"github.com/carlmjohnson/requests"
-	log "github.com/sirupsen/logrus"
 	"github.com/nicjohnson145/mixer-service/pkg/auth"
 	"github.com/nicjohnson145/mixer-service/pkg/common"
 	"github.com/nicjohnson145/mixer-service/pkg/jwt"
-	"context"
+	log "github.com/sirupsen/logrus"
+	"os"
 )
 
 var (
-	username string
-	newUser string
+	username    string
+	newUser     string
 	newPassword string
-	host string
+	host        string
 )
 
 func init() {
@@ -63,11 +63,11 @@ func main() {
 	}
 
 	err = requests.
-			URL(host + common.AuthV1 + "/register-user").
-			Header(jwt.AuthenticationHeader, loginResp.AccessToken).
-			BodyJSON(&registerRequest).
-			Fetch(context.Background())
-	
+		URL(host+common.AuthV1+"/register-user").
+		Header(jwt.AuthenticationHeader, loginResp.AccessToken).
+		BodyJSON(&registerRequest).
+		Fetch(context.Background())
+
 	if err != nil {
 		log.Fatalf("Error registering user: %v", err)
 	}
