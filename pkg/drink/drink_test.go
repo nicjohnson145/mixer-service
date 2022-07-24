@@ -185,6 +185,7 @@ func TestFullCRUDLoop(t *testing.T) {
 			"1 oz lime",
 		},
 		Publicity: DrinkPublicityPrivate,
+		UnderDevelopment: true,
 	}
 	updatedDrinkData := DrinkData{
 		Name:           "Daquari",
@@ -196,6 +197,7 @@ func TestFullCRUDLoop(t *testing.T) {
 			"0.75 oz lime",
 		},
 		Publicity: DrinkPublicityPrivate,
+		UnderDevelopment: false,
 	}
 
 	body := CreateDrinkRequest{DrinkData: origDrinkData}

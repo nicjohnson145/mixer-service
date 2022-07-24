@@ -1,13 +1,14 @@
 package drink
 
 type DrinkData struct {
-	Name           string   `json:"name" validate:"required"`
-	PrimaryAlcohol string   `json:"primary_alcohol" validate:"required"`
-	PreferredGlass string   `json:"preferred_glass,omitempty"`
-	Ingredients    []string `json:"ingredients" validate:"required"`
-	Instructions   string   `json:"instructions,omitempty"`
-	Notes          string   `json:"notes,omitempty"`
-	Publicity      string   `json:"publicity" validate:"required"`
+	Name             string   `json:"name" validate:"required"`
+	PrimaryAlcohol   string   `json:"primary_alcohol" validate:"required"`
+	PreferredGlass   string   `json:"preferred_glass,omitempty"`
+	Ingredients      []string `json:"ingredients" validate:"required"`
+	Instructions     string   `json:"instructions,omitempty"`
+	Notes            string   `json:"notes,omitempty"`
+	Publicity        string   `json:"publicity" validate:"required"`
+	UnderDevelopment bool     `json:"under_development"`
 }
 
 func (d *DrinkData) SetName(v string) {
@@ -66,6 +67,14 @@ func (d DrinkData) GetPublicity() string {
 	return d.Publicity
 }
 
+func (d *DrinkData) SetUnderDevelopment(v bool) {
+	d.UnderDevelopment = v
+}
+
+func (d DrinkData) GetUnderDevelopment() bool {
+	return d.UnderDevelopment
+}
+
 type DrinkDataOperator interface {
 	DrinkDataSetter
 	DrinkDataGetter
@@ -79,6 +88,7 @@ type DrinkDataSetter interface {
 	SetInstructions(string)
 	SetNotes(string)
 	SetPublicity(string)
+	SetUnderDevelopment(bool)
 }
 
 type DrinkDataGetter interface {
@@ -89,4 +99,5 @@ type DrinkDataGetter interface {
 	GetInstructions() string
 	GetNotes() string
 	GetPublicity() string
+	GetUnderDevelopment() bool
 }
