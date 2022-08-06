@@ -12,6 +12,11 @@ func fromDb(d Model) (Drink, error) {
 		return Drink{}, err
 	}
 
+	tags, err := fromCSV(d.Tags)
+	if err != nil {
+		return Drink{}, err
+	}
+
 	underDevelopment := false
 	if d.UnderDevelopment == 1 {
 		underDevelopment = true
@@ -29,12 +34,18 @@ func fromDb(d Model) (Drink, error) {
 			Notes:            d.Notes,
 			Publicity:        d.Publicity,
 			UnderDevelopment: underDevelopment,
+			Tags:             tags,
 		},
 	}, nil
 }
 
 func toDb(d Drink) (Model, error) {
 	ingredients, err := toCSV(d.Ingredients)
+	if err != nil {
+		return Model{}, err
+	}
+
+	tags, err := toCSV(d.Tags)
 	if err != nil {
 		return Model{}, err
 	}
@@ -55,6 +66,7 @@ func toDb(d Drink) (Model, error) {
 		Notes:            d.Notes,
 		Publicity:        d.Publicity,
 		UnderDevelopment: underDevelopment,
+		Tags:             tags,
 	}, nil
 }
 
@@ -70,6 +82,10 @@ func toCSV(s []string) (string, error) {
 }
 
 func fromCSV(s string) ([]string, error) {
+	if s == "" {
+		return nil, nil
+	}
+
 	r := csv.NewReader(strings.NewReader(s))
 	return r.Read()
 }
@@ -83,4 +99,5 @@ func setDrinkDataAttributes(obj DrinkDataSetter, data DrinkDataGetter) {
 	obj.SetNotes(data.GetNotes())
 	obj.SetPublicity(data.GetPublicity())
 	obj.SetUnderDevelopment(data.GetUnderDevelopment())
+	obj.SetTags(data.GetTags())
 }
