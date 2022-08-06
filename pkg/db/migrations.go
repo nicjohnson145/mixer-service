@@ -103,6 +103,23 @@ func createMigrations() *migrate.MemoryMigrationSource {
 					;
 				`},
 			},
+			{
+				Id: nextId(),
+				Up: []string{`
+					ALTER TABLE
+						drink
+					ADD COLUMN
+						tags TEXT
+					;
+				`},
+				Down: []string{`
+					ALTER TABLE
+						drink
+					DROP COLUMN
+						tags
+					;
+				`},
+			},
 			//{
 			//    Id: nextId(),
 			//    Up: []string{},

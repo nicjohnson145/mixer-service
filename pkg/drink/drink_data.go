@@ -9,6 +9,7 @@ type DrinkData struct {
 	Notes            string   `json:"notes,omitempty"`
 	Publicity        string   `json:"publicity" validate:"required"`
 	UnderDevelopment bool     `json:"under_development"`
+	Tags             []string `json:"tags"`
 }
 
 func (d *DrinkData) SetName(v string) {
@@ -75,6 +76,14 @@ func (d DrinkData) GetUnderDevelopment() bool {
 	return d.UnderDevelopment
 }
 
+func (d *DrinkData) SetTags(v []string) {
+	d.Tags = v
+}
+
+func (d DrinkData) GetTags() []string {
+	return d.Tags
+}
+
 type DrinkDataOperator interface {
 	DrinkDataSetter
 	DrinkDataGetter
@@ -89,6 +98,7 @@ type DrinkDataSetter interface {
 	SetNotes(string)
 	SetPublicity(string)
 	SetUnderDevelopment(bool)
+	SetTags([]string)
 }
 
 type DrinkDataGetter interface {
@@ -100,4 +110,5 @@ type DrinkDataGetter interface {
 	GetNotes() string
 	GetPublicity() string
 	GetUnderDevelopment() bool
+	GetTags() []string
 }
