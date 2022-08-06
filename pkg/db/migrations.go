@@ -120,6 +120,26 @@ func createMigrations() *migrate.MemoryMigrationSource {
 					;
 				`},
 			},
+			{
+				Id: nextId(),
+				Up: []string{`
+					ALTER TABLE
+						drink
+					ADD COLUMN
+						favorite INTEGER
+					NOT NULL
+					DEFAULT
+						FALSE
+					;
+				`},
+				Down: []string{`
+					ALTER TABLE
+						drink
+					DROP COLUMN
+						favorite
+					;
+				`},
+			},
 			//{
 			//    Id: nextId(),
 			//    Up: []string{},

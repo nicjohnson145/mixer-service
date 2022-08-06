@@ -17,11 +17,6 @@ func fromDb(d Model) (Drink, error) {
 		return Drink{}, err
 	}
 
-	underDevelopment := false
-	if d.UnderDevelopment == 1 {
-		underDevelopment = true
-	}
-
 	return Drink{
 		ID:       d.ID,
 		Username: d.Username,
@@ -33,8 +28,9 @@ func fromDb(d Model) (Drink, error) {
 			Instructions:     d.Instructions,
 			Notes:            d.Notes,
 			Publicity:        d.Publicity,
-			UnderDevelopment: underDevelopment,
+			UnderDevelopment: toBool(d.UnderDevelopment),
 			Tags:             tags,
+			Favorite:         toBool(d.Favorite),
 		},
 	}, nil
 }
@@ -50,11 +46,6 @@ func toDb(d Drink) (Model, error) {
 		return Model{}, err
 	}
 
-	underDevelopment := 0
-	if d.UnderDevelopment {
-		underDevelopment = 1
-	}
-
 	return Model{
 		ID:               d.ID,
 		Name:             d.Name,
@@ -65,8 +56,9 @@ func toDb(d Drink) (Model, error) {
 		Instructions:     d.Instructions,
 		Notes:            d.Notes,
 		Publicity:        d.Publicity,
-		UnderDevelopment: underDevelopment,
+		UnderDevelopment: fromBool(d.UnderDevelopment),
 		Tags:             tags,
+		Favorite:         fromBool(d.Favorite),
 	}, nil
 }
 
@@ -90,6 +82,18 @@ func fromCSV(s string) ([]string, error) {
 	return r.Read()
 }
 
+func fromBool(v bool) int {
+	if v {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+func toBool(i int) bool {
+	return i == 1
+}
+
 func setDrinkDataAttributes(obj DrinkDataSetter, data DrinkDataGetter) {
 	obj.SetName(data.GetName())
 	obj.SetPrimaryAlcohol(data.GetPrimaryAlcohol())
@@ -100,4 +104,5 @@ func setDrinkDataAttributes(obj DrinkDataSetter, data DrinkDataGetter) {
 	obj.SetPublicity(data.GetPublicity())
 	obj.SetUnderDevelopment(data.GetUnderDevelopment())
 	obj.SetTags(data.GetTags())
+	obj.SetFavorite(data.GetFavorite())
 }

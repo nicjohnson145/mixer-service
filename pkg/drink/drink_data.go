@@ -10,6 +10,7 @@ type DrinkData struct {
 	Publicity        string   `json:"publicity" validate:"required"`
 	UnderDevelopment bool     `json:"under_development"`
 	Tags             []string `json:"tags"`
+	Favorite         bool     `json:"favorite"`
 }
 
 func (d *DrinkData) SetName(v string) {
@@ -84,6 +85,14 @@ func (d DrinkData) GetTags() []string {
 	return d.Tags
 }
 
+func (d *DrinkData) SetFavorite(b bool) {
+	d.Favorite = b
+}
+
+func (d DrinkData) GetFavorite() bool {
+	return d.Favorite
+}
+
 type DrinkDataOperator interface {
 	DrinkDataSetter
 	DrinkDataGetter
@@ -99,6 +108,7 @@ type DrinkDataSetter interface {
 	SetPublicity(string)
 	SetUnderDevelopment(bool)
 	SetTags([]string)
+	SetFavorite(bool)
 }
 
 type DrinkDataGetter interface {
@@ -111,4 +121,5 @@ type DrinkDataGetter interface {
 	GetPublicity() string
 	GetUnderDevelopment() bool
 	GetTags() []string
+	GetFavorite() bool
 }
