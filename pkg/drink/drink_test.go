@@ -187,6 +187,7 @@ func TestFullCRUDLoop(t *testing.T) {
 		Publicity:        DrinkPublicityPrivate,
 		UnderDevelopment: true,
 		Tags: []string{"delicious", "foo"},
+		Favorite: true,
 	}
 	updatedDrinkData := DrinkData{
 		Name:           "Daquari",
@@ -200,6 +201,7 @@ func TestFullCRUDLoop(t *testing.T) {
 		Publicity:        DrinkPublicityPrivate,
 		UnderDevelopment: false,
 		Tags: []string{"delicious", "foo", "bar"},
+		Favorite: false,
 	}
 
 	body := CreateDrinkRequest{DrinkData: origDrinkData}
