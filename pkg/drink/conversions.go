@@ -93,16 +93,3 @@ func fromBool(v bool) int {
 func toBool(i int) bool {
 	return i == 1
 }
-
-func setDrinkDataAttributes(obj DrinkDataSetter, data DrinkDataGetter) {
-	obj.SetName(data.GetName())
-	obj.SetPrimaryAlcohol(data.GetPrimaryAlcohol())
-	obj.SetPreferredGlass(data.GetPreferredGlass())
-	obj.SetIngredients(data.GetIngredients())
-	obj.SetInstructions(data.GetInstructions())
-	obj.SetNotes(data.GetNotes())
-	obj.SetPublicity(data.GetPublicity())
-	obj.SetUnderDevelopment(data.GetUnderDevelopment())
-	obj.SetTags(data.GetTags())
-	obj.SetFavorite(data.GetFavorite())
-}

@@ -1,0 +1,44 @@
+package {{ .Pkg }}
+
+// GENERATED CODE: DO NOT EDIT
+{{ range .Structs }}
+// Generated accessor for {{ .Name }}
+{{- $structName := .Name }}
+{{- range .Fields }}
+{{- if .Tagged }}
+{{- if HasTagValue .TagValue "read" }}
+func (t {{ $structName }}) Get{{.Name}}() {{.Type}} {
+	return t.{{.Name}}
+}
+{{- end}}
+{{- if HasTagValue .TagValue "write" }}
+func (t *{{ $structName }}) Set{{.Name}}(v {{.Type}})  {
+	t.{{.Name}} = v
+}
+{{- end}}
+{{- end}}
+{{- end}}
+
+type {{.Name}}Setter interface {
+{{- range .Fields }}
+{{- if HasTagValue .TagValue "write" }}
+	Set{{.Name}}({{.Type}})
+{{- end}}
+{{- end}}
+}
+
+type {{.Name}}Getter interface {
+{{- range .Fields }}
+{{- if HasTagValue .TagValue "read" }}
+	Get{{.Name}}() {{.Type}}
+{{- end}}
+{{- end}}
+}
+
+func set{{ $structName }}Attributes(obj {{$structName}}Setter, data {{$structName}}Getter) {
+{{- range .Fields }}
+	obj.Set{{.Name}}(data.Get{{.Name}}())
+{{- end}}
+}
+
+{{ end }}
