@@ -110,6 +110,10 @@ func createMigrations() *migrate.MemoryMigrationSource {
 						drink
 					ADD COLUMN
 						tags TEXT
+					NOT
+						NULL
+					DEFAULT
+						""
 					;
 				`},
 				Down: []string{`
