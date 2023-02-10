@@ -18,7 +18,7 @@ func Init(app *fiber.App) error {
 }
 
 func addStaticRoutes(app *fiber.App) {
-	app.Use("/static", filesystem.New(filesystem.Config{
+	app.Use("/static/", filesystem.New(filesystem.Config{
 		Root:       http.FS(publicWebUiContent),
 		PathPrefix: "public/webui",
 		Browse:     true,
