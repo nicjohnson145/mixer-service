@@ -34,5 +34,4 @@ func defineRoutes(app *fiber.App, db *sql.DB) {
 	app.Put(common.DrinksV1+"/:id", auth.RequiresValidAccessToken(updateDrink(db)))
 	app.Get(common.DrinksV1+"/by-user/:username", auth.RequiresValidAccessToken(getDrinksByUser(db)))
 	app.Post(common.DrinksV1+"/:id/copy", auth.RequiresValidAccessToken(copyDrink(db)))
-	app.Static("/static", "../../pkg/public/webui")
 }
